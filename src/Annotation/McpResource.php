@@ -16,10 +16,6 @@ use Attribute;
 use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
 use ReflectionClass;
 
-/**
- * @Annotation
- * @Target({"METHOD"})
- */
 #[Attribute(Attribute::TARGET_METHOD)]
 class McpResource extends McpAnnotation
 {

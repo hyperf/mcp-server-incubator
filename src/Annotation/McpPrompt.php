@@ -17,10 +17,6 @@ use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
 use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 use Dtyq\PhpMcp\Types\Prompts\PromptArgument;
 
-/**
- * @Annotation
- * @Target({"METHOD"})
- */
 #[Attribute(Attribute::TARGET_METHOD)]
 class McpPrompt extends McpAnnotation
 {
