@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
-use Hyperf\McpServer\Annotation\McpTool;
+use Hyperf\McpServer\Annotation\Tool;
 use HyperfTest\McpServer\AbstractTestCase;
 
 /**
@@ -24,7 +24,7 @@ class McpToolTest extends AbstractTestCase
 {
     public function testCreateWithValidName(): void
     {
-        $tool = new McpTool(
+        $tool = new Tool(
             name: 'valid_tool_name',
             description: 'A valid tool',
             server: 'test'
@@ -41,12 +41,12 @@ class McpToolTest extends AbstractTestCase
         $this->expectException(ValidationError::class);
         $this->expectExceptionMessage('Tool name must be alphanumeric and underscores.');
 
-        new McpTool(name: 'invalid-name-with-hyphens');
+        new Tool(name: 'invalid-name-with-hyphens');
     }
 
     public function testCreateWithEmptyNameUsesMethodName(): void
     {
-        $tool = new McpTool();
+        $tool = new Tool();
         $tool->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('testMethod', $tool->getName());
@@ -54,7 +54,7 @@ class McpToolTest extends AbstractTestCase
 
     public function testGetInputSchemaGeneratesAutomatically(): void
     {
-        $tool = new McpTool();
+        $tool = new Tool();
         $tool->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $schema = $tool->getInputSchema();
@@ -73,21 +73,21 @@ class McpToolTest extends AbstractTestCase
             ],
         ];
 
-        $tool = new McpTool(inputSchema: $customSchema);
+        $tool = new Tool(inputSchema: $customSchema);
 
         $this->assertEquals($customSchema, $tool->getInputSchema());
     }
 
     public function testDisabledTool(): void
     {
-        $tool = new McpTool(enabled: false);
+        $tool = new Tool(enabled: false);
 
         $this->assertFalse($tool->isEnabled());
     }
 
     public function testDefaultValues(): void
     {
-        $tool = new McpTool();
+        $tool = new Tool();
         $tool->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $tool->getDescription());
@@ -101,7 +101,7 @@ class McpToolTest extends AbstractTestCase
      */
     public function testValidToolNames(string $name): void
     {
-        $tool = new McpTool(name: $name);
+        $tool = new Tool(name: $name);
         $this->assertEquals($name, $tool->getName());
     }
 
@@ -122,7 +122,7 @@ class McpToolTest extends AbstractTestCase
     public function testInvalidToolNames(string $name): void
     {
         $this->expectException(ValidationError::class);
-        new McpTool(name: $name);
+        new Tool(name: $name);
     }
 
     public static function invalidToolNamesProvider(): array

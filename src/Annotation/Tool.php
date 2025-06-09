@@ -17,7 +17,7 @@ use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
 use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class McpTool extends McpAnnotation
+class Tool extends McpAnnotation
 {
     public function __construct(
         protected string $name = '',

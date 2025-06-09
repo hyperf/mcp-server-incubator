@@ -17,7 +17,7 @@ use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
 use ReflectionClass;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class McpResource extends McpAnnotation
+class Resource extends McpAnnotation
 {
     public function __construct(
         protected string $name = '',

@@ -20,9 +20,9 @@ use Dtyq\PhpMcp\Types\Resources\Resource;
 use Dtyq\PhpMcp\Types\Tools\Tool;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Di\Annotation\AnnotationCollector;
-use Hyperf\McpServer\Annotation\McpPrompt;
-use Hyperf\McpServer\Annotation\McpResource;
-use Hyperf\McpServer\Annotation\McpTool;
+use Hyperf\McpServer\Annotation\Prompt as McpPrompt;
+use Hyperf\McpServer\Annotation\Resource as McpResource;
+use Hyperf\McpServer\Annotation\Tool as McpTool;
 use RuntimeException;
 
 class McpCollector

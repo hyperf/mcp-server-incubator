@@ -18,7 +18,7 @@ use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 use Dtyq\PhpMcp\Types\Prompts\PromptArgument;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class McpPrompt extends McpAnnotation
+class Prompt extends McpAnnotation
 {
     /**
      * @param array<string, mixed> $arguments

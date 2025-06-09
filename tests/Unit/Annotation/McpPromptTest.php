@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
-use Hyperf\McpServer\Annotation\McpPrompt;
+use Hyperf\McpServer\Annotation\Prompt;
 use HyperfTest\McpServer\AbstractTestCase;
 
 /**
@@ -24,7 +24,7 @@ class McpPromptTest extends AbstractTestCase
 {
     public function testCreateWithValidName(): void
     {
-        $prompt = new McpPrompt(
+        $prompt = new Prompt(
             name: 'valid_prompt_name',
             description: 'A valid prompt',
             server: 'test'
@@ -41,12 +41,12 @@ class McpPromptTest extends AbstractTestCase
         $this->expectException(ValidationError::class);
         $this->expectExceptionMessage('Prompt name must be alphanumeric, underscores, and hyphens.');
 
-        new McpPrompt(name: 'invalid name with spaces');
+        new Prompt(name: 'invalid name with spaces');
     }
 
     public function testCreateWithEmptyNameUsesMethodName(): void
     {
-        $prompt = new McpPrompt();
+        $prompt = new Prompt();
         $prompt->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('testMethod', $prompt->getName());
@@ -54,7 +54,7 @@ class McpPromptTest extends AbstractTestCase
 
     public function testGetArgumentsGeneratesAutomatically(): void
     {
-        $prompt = new McpPrompt();
+        $prompt = new Prompt();
         $prompt->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $arguments = $prompt->getArguments();
@@ -69,21 +69,21 @@ class McpPromptTest extends AbstractTestCase
             ['name' => 'param2', 'description' => 'Second parameter', 'required' => false],
         ];
 
-        $prompt = new McpPrompt(arguments: $customArguments);
+        $prompt = new Prompt(arguments: $customArguments);
 
         $this->assertEquals($customArguments, $prompt->getArguments());
     }
 
     public function testDisabledPrompt(): void
     {
-        $prompt = new McpPrompt(enabled: false);
+        $prompt = new Prompt(enabled: false);
 
         $this->assertFalse($prompt->isEnabled());
     }
 
     public function testDefaultValues(): void
     {
-        $prompt = new McpPrompt();
+        $prompt = new Prompt();
         $prompt->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $prompt->getDescription());
@@ -97,7 +97,7 @@ class McpPromptTest extends AbstractTestCase
      */
     public function testValidPromptNames(string $name): void
     {
-        $prompt = new McpPrompt(name: $name);
+        $prompt = new Prompt(name: $name);
         $this->assertEquals($name, $prompt->getName());
     }
 
@@ -120,7 +120,7 @@ class McpPromptTest extends AbstractTestCase
     public function testInvalidPromptNames(string $name): void
     {
         $this->expectException(ValidationError::class);
-        new McpPrompt(name: $name);
+        new Prompt(name: $name);
     }
 
     public static function invalidPromptNamesProvider(): array

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
-use Hyperf\McpServer\Annotation\McpResource;
+use Hyperf\McpServer\Annotation\Resource;
 use HyperfTest\McpServer\AbstractTestCase;
 
 /**
@@ -24,7 +24,7 @@ class McpResourceTest extends AbstractTestCase
 {
     public function testCreateWithValidParameters(): void
     {
-        $resource = new McpResource(
+        $resource = new Resource(
             name: 'valid_resource',
             uri: 'mcp://test/resource',
             description: 'A valid resource',
@@ -48,7 +48,7 @@ class McpResourceTest extends AbstractTestCase
         $this->expectException(ToolError::class);
         $this->expectExceptionMessage('Resource name must be alphanumeric, underscores, and hyphens.');
 
-        new McpResource(name: 'invalid name with spaces');
+        new Resource(name: 'invalid name with spaces');
     }
 
     public function testCreateWithInvalidUriThrowsException(): void
@@ -56,12 +56,12 @@ class McpResourceTest extends AbstractTestCase
         $this->expectException(ToolError::class);
         $this->expectExceptionMessage('Resource URI must be a valid URI format.');
 
-        new McpResource(uri: 'invalid-uri');
+        new Resource(uri: 'invalid-uri');
     }
 
     public function testCreateWithEmptyNameUsesMethodName(): void
     {
-        $resource = new McpResource();
+        $resource = new Resource();
         $resource->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('testMethod', $resource->getName());
@@ -69,7 +69,7 @@ class McpResourceTest extends AbstractTestCase
 
     public function testGenerateDefaultUri(): void
     {
-        $resource = new McpResource();
+        $resource = new Resource();
         $resource->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $uri = $resource->getUri();
@@ -80,7 +80,7 @@ class McpResourceTest extends AbstractTestCase
     public function testCreateWithTemplate(): void
     {
         $uriTemplate = ['param1' => 'string', 'param2' => 'integer'];
-        $resource = new McpResource(
+        $resource = new Resource(
             isTemplate: true,
             uriTemplate: $uriTemplate
         );
@@ -91,14 +91,14 @@ class McpResourceTest extends AbstractTestCase
 
     public function testDisabledResource(): void
     {
-        $resource = new McpResource(enabled: false);
+        $resource = new Resource(enabled: false);
 
         $this->assertFalse($resource->isEnabled());
     }
 
     public function testDefaultValues(): void
     {
-        $resource = new McpResource();
+        $resource = new Resource();
 
         $this->assertEquals('', $resource->getDescription());
         $this->assertNull($resource->getMimeType());
@@ -114,7 +114,7 @@ class McpResourceTest extends AbstractTestCase
      */
     public function testValidResourceNames(string $name): void
     {
-        $resource = new McpResource(name: $name);
+        $resource = new Resource(name: $name);
         $this->assertEquals($name, $resource->getName());
     }
 
@@ -137,7 +137,7 @@ class McpResourceTest extends AbstractTestCase
     public function testInvalidResourceNames(string $name): void
     {
         $this->expectException(ToolError::class);
-        new McpResource(name: $name);
+        new Resource(name: $name);
     }
 
     public static function invalidResourceNamesProvider(): array
@@ -156,7 +156,7 @@ class McpResourceTest extends AbstractTestCase
      */
     public function testValidUris(string $uri): void
     {
-        $resource = new McpResource(uri: $uri);
+        $resource = new Resource(uri: $uri);
         $this->assertEquals($uri, $resource->getUri());
     }
 
@@ -177,7 +177,7 @@ class McpResourceTest extends AbstractTestCase
     public function testInvalidUris(string $uri): void
     {
         $this->expectException(ToolError::class);
-        new McpResource(uri: $uri);
+        new Resource(uri: $uri);
     }
 
     public static function invalidUrisProvider(): array

@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace HyperfTest\McpServer\Stubs;
 
-use Hyperf\McpServer\Annotation\McpPrompt;
-use Hyperf\McpServer\Annotation\McpResource;
-use Hyperf\McpServer\Annotation\McpTool;
+use Hyperf\McpServer\Annotation\Prompt;
+use Hyperf\McpServer\Annotation\Resource;
+use Hyperf\McpServer\Annotation\Tool;
 
 class MockService
 {
-    #[McpTool(
+    #[Tool(
         name: 'test_tool',
         description: 'A test tool for unit testing',
         server: 'test'
@@ -28,7 +28,7 @@ class MockService
         return "Processed: {$input}";
     }
 
-    #[McpTool(
+    #[Tool(
         name: 'math_add',
         description: 'Add two numbers',
         server: 'math'
@@ -38,7 +38,7 @@ class MockService
         return $a + $b;
     }
 
-    #[McpPrompt(
+    #[Prompt(
         name: 'test_prompt',
         description: 'A test prompt for unit testing',
         server: 'test'
@@ -48,7 +48,7 @@ class MockService
         return "Please provide information about: {$topic}";
     }
 
-    #[McpResource(
+    #[Resource(
         name: 'test_resource',
         uri: 'mcp://test/resource',
         description: 'A test resource for unit testing',
@@ -64,7 +64,7 @@ class MockService
         ];
     }
 
-    #[McpTool(
+    #[Tool(
         name: 'disabled_tool',
         description: 'A disabled tool',
         enabled: false
