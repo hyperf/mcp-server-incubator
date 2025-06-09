@@ -27,12 +27,14 @@ class McpPromptTest extends AbstractTestCase
         $prompt = new Prompt(
             name: 'valid_prompt_name',
             description: 'A valid prompt',
-            server: 'test'
+            server: 'test',
+            version: 'v1.0'
         );
 
         $this->assertEquals('valid_prompt_name', $prompt->getName());
         $this->assertEquals('A valid prompt', $prompt->getDescription());
         $this->assertEquals('test', $prompt->getServer());
+        $this->assertEquals('v1.0', $prompt->getVersion());
         $this->assertTrue($prompt->isEnabled());
     }
 
@@ -88,6 +90,7 @@ class McpPromptTest extends AbstractTestCase
 
         $this->assertEquals('', $prompt->getDescription());
         $this->assertEquals('', $prompt->getServer());
+        $this->assertEquals('', $prompt->getVersion());
         $this->assertTrue($prompt->isEnabled());
         $this->assertIsArray($prompt->getArguments());
     }

@@ -27,12 +27,14 @@ class McpToolTest extends AbstractTestCase
         $tool = new Tool(
             name: 'valid_tool_name',
             description: 'A valid tool',
-            server: 'test'
+            server: 'test',
+            version: 'v1.0'
         );
 
         $this->assertEquals('valid_tool_name', $tool->getName());
         $this->assertEquals('A valid tool', $tool->getDescription());
         $this->assertEquals('test', $tool->getServer());
+        $this->assertEquals('v1.0', $tool->getVersion());
         $this->assertTrue($tool->isEnabled());
     }
 
@@ -92,6 +94,7 @@ class McpToolTest extends AbstractTestCase
 
         $this->assertEquals('', $tool->getDescription());
         $this->assertEquals('', $tool->getServer());
+        $this->assertEquals('', $tool->getVersion());
         $this->assertTrue($tool->isEnabled());
         $this->assertIsArray($tool->getInputSchema());
     }

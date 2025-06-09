@@ -52,12 +52,12 @@ class McpCollectorTest extends AbstractTestCase
         }
     }
 
-    public function testGetToolsWithGroup(): void
+    public function testGetToolsWithServer(): void
     {
         $mathTools = McpCollector::getTools('math');
 
         $this->assertIsArray($mathTools);
-        // Group-specific tools may or may not exist
+        // Server-specific tools may or may not exist
         foreach ($mathTools as $tool) {
             $this->assertInstanceOf(RegisteredTool::class, $tool);
         }
@@ -74,12 +74,12 @@ class McpCollectorTest extends AbstractTestCase
         }
     }
 
-    public function testGetPromptsWithGroup(): void
+    public function testGetPromptsWithServer(): void
     {
         $prompts = McpCollector::getPrompts('test');
 
         $this->assertIsArray($prompts);
-        // Group-specific prompts may or may not exist
+        // Server-specific prompts may or may not exist
         foreach ($prompts as $prompt) {
             $this->assertInstanceOf(RegisteredPrompt::class, $prompt);
         }
@@ -96,12 +96,12 @@ class McpCollectorTest extends AbstractTestCase
         }
     }
 
-    public function testGetResourcesWithGroup(): void
+    public function testGetResourcesWithServer(): void
     {
         $resources = McpCollector::getResources('test');
 
         $this->assertIsArray($resources);
-        // Group-specific resources may or may not exist
+        // Server-specific resources may or may not exist
         foreach ($resources as $resource) {
             $this->assertInstanceOf(RegisteredResource::class, $resource);
         }
@@ -152,9 +152,9 @@ class McpCollectorTest extends AbstractTestCase
         $this->assertIsArray($resources);
     }
 
-    public function testCollectorGroupFiltering(): void
+    public function testCollectorServerFiltering(): void
     {
-        // Test group filtering works even with empty annotations
+        // Test server filtering works even with empty annotations
         $defaultTools = McpCollector::getTools('');
         $mathTools = McpCollector::getTools('math');
         $testTools = McpCollector::getTools('test');
@@ -162,6 +162,20 @@ class McpCollectorTest extends AbstractTestCase
         $this->assertIsArray($defaultTools);
         $this->assertIsArray($mathTools);
         $this->assertIsArray($testTools);
+    }
+
+    public function testCollectorWithServerAndVersion(): void
+    {
+        // Test server and version filtering
+        $toolsV1 = McpCollector::getTools('test', 'v1.0');
+        $toolsV2 = McpCollector::getTools('test', 'v2.0');
+        $promptsV1 = McpCollector::getPrompts('test', 'v1.0');
+        $resourcesV1 = McpCollector::getResources('test', 'v1.0');
+
+        $this->assertIsArray($toolsV1);
+        $this->assertIsArray($toolsV2);
+        $this->assertIsArray($promptsV1);
+        $this->assertIsArray($resourcesV1);
     }
 
     public function testCollectorMethodsDoNotThrowExceptions(): void

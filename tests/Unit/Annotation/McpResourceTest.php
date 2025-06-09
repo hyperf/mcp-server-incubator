@@ -30,7 +30,8 @@ class McpResourceTest extends AbstractTestCase
             description: 'A valid resource',
             mimeType: 'application/json',
             size: 1024,
-            server: 'test'
+            server: 'test',
+            version: 'v1.0'
         );
 
         $this->assertEquals('valid_resource', $resource->getName());
@@ -39,6 +40,7 @@ class McpResourceTest extends AbstractTestCase
         $this->assertEquals('application/json', $resource->getMimeType());
         $this->assertEquals(1024, $resource->getSize());
         $this->assertEquals('test', $resource->getServer());
+        $this->assertEquals('v1.0', $resource->getVersion());
         $this->assertTrue($resource->isEnabled());
         $this->assertFalse($resource->isTemplate());
     }
@@ -104,6 +106,7 @@ class McpResourceTest extends AbstractTestCase
         $this->assertNull($resource->getMimeType());
         $this->assertNull($resource->getSize());
         $this->assertEquals('', $resource->getServer());
+        $this->assertEquals('', $resource->getVersion());
         $this->assertTrue($resource->isEnabled());
         $this->assertFalse($resource->isTemplate());
         $this->assertEquals([], $resource->getUriTemplate());
