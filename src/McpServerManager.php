@@ -61,7 +61,7 @@ class McpServerManager
         return new McpServer($name, $version, $this->application);
     }
 
-    protected function addAnnotationTools(McpServer $mcpServer, string $server = 'default'): void
+    protected function addAnnotationTools(McpServer $mcpServer, string $server): void
     {
         $registeredTools = McpCollector::getTools($server);
         foreach ($registeredTools as $registeredTool) {
@@ -69,7 +69,7 @@ class McpServerManager
         }
     }
 
-    protected function addAnnotationPrompts(McpServer $mcpServer, string $server = 'default'): void
+    protected function addAnnotationPrompts(McpServer $mcpServer, string $server): void
     {
         $registeredPrompts = McpCollector::getPrompts($server);
         foreach ($registeredPrompts as $registeredPrompt) {
@@ -77,7 +77,7 @@ class McpServerManager
         }
     }
 
-    protected function addAnnotationResources(McpServer $mcpServer, string $server = 'default'): void
+    protected function addAnnotationResources(McpServer $mcpServer, string $server): void
     {
         $registeredResources = McpCollector::getResources($server);
         foreach ($registeredResources as $registeredResource) {

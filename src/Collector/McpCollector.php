@@ -47,7 +47,7 @@ class McpCollector
     /**
      * @return array<string, RegisteredTool>
      */
-    public static function getTools(string $server): array
+    public static function getTools(string $server = 'default'): array
     {
         self::collect();
         return self::$tools[$server] ?? [];
@@ -56,7 +56,7 @@ class McpCollector
     /**
      * @return array<string, RegisteredPrompt>
      */
-    public static function getPrompts(string $server): array
+    public static function getPrompts(string $server = 'default'): array
     {
         self::collect();
         return self::$prompts[$server] ?? [];
@@ -65,7 +65,7 @@ class McpCollector
     /**
      * @return array<string, RegisteredResource>
      */
-    public static function getResources(string $server): array
+    public static function getResources(string $server = 'default'): array
     {
         self::collect();
         return self::$resources[$server] ?? [];
