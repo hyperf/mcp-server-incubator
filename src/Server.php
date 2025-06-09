@@ -18,17 +18,13 @@ use Psr\Http\Message\ResponseInterface;
 
 class Server
 {
-    protected ContainerInterface $container;
-
-    protected McpServerManager $mcpServerManager;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-        $this->mcpServerManager = $container->get(McpServerManager::class);
+    public function __construct(
+        protected ContainerInterface $container,
+        protected McpServerManager $mcpServerManager
+    ) {
     }
 
-    public function handle(string $server = '', ?RequestInterface $request = null): ResponseInterface
+    public function handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface
     {
         $request ??= $this->container->get(RequestInterface::class);
 

@@ -23,25 +23,17 @@ use Psr\Http\Message\ResponseInterface;
 
 class McpServerManager
 {
-    protected ContainerInterface $container;
-
-    protected Application $application;
-
-    protected AuthenticatorInterface $authenticator;
-
-    protected SessionManagerInterface $sessionManager;
-
     /**
      * @var array<string, McpServer>
      */
     protected array $mcpServers = [];
 
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-        $this->application = $container->get(Application::class);
-        $this->authenticator = $container->get(AuthenticatorInterface::class);
-        $this->sessionManager = $container->get(SessionManagerInterface::class);
+    public function __construct(
+        protected ContainerInterface $container,
+        protected Application $application,
+        protected AuthenticatorInterface $authenticator,
+        protected SessionManagerInterface $sessionManager,
+    ) {
     }
 
     public function handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface
