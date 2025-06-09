@@ -24,7 +24,7 @@ use Psr\Http\Message\ResponseInterface;
 class McpServerManager
 {
     /**
-     * @var array<string, McpServer>
+     * @var array<string, array<string, McpServer>>
      */
     protected array $mcpServers = [];
 
@@ -36,24 +36,24 @@ class McpServerManager
     ) {
     }
 
-    public function handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface
+    public function handle(string $server = '', string $version = '1.0.0', ?RequestInterface $request = null): ResponseInterface
     {
         $request ??= $this->container->get(RequestInterface::class);
 
-        return $this->get($server)->http($request, $this->sessionManager, $this->authenticator);
+        return $this->get($server, $version)->http($request, $this->sessionManager, $this->authenticator);
     }
 
-    public function get(string $server = 'default'): McpServer
+    public function get(string $server = '', string $version = '1.0.0'): McpServer
     {
-        if (! isset($this->mcpServers[$server])) {
-            $mcpServer = $this->createMcpServer('McpServer', $server, '1.0.0');
-            $this->addAnnotationTools($mcpServer, $server);
-            $this->addAnnotationPrompts($mcpServer, $server);
-            $this->addAnnotationResources($mcpServer, $server);
-            $this->mcpServers[$server] = $mcpServer;
+        if (! isset($this->mcpServers[$server][$version])) {
+            $mcpServer = $this->createMcpServer('McpServer', $server, $version);
+            $this->addAnnotationTools($mcpServer, $server, $version);
+            $this->addAnnotationPrompts($mcpServer, $server, $version);
+            $this->addAnnotationResources($mcpServer, $server, $version);
+            $this->mcpServers[$server][$version] = $mcpServer;
         }
 
-        return $this->mcpServers[$server];
+        return $this->mcpServers[$server][$version];
     }
 
     public function createMcpServer(string $name = 'McpServer', string $version = '1.0.0'): McpServer
@@ -61,25 +61,25 @@ class McpServerManager
         return new McpServer($name, $version, $this->application);
     }
 
-    protected function addAnnotationTools(McpServer $mcpServer, string $server): void
+    protected function addAnnotationTools(McpServer $mcpServer, string $server, string $version): void
     {
-        $registeredTools = McpCollector::getTools($server);
+        $registeredTools = McpCollector::getTools($server, $version);
         foreach ($registeredTools as $registeredTool) {
             $mcpServer->registerTool($registeredTool);
         }
     }
 
-    protected function addAnnotationPrompts(McpServer $mcpServer, string $server): void
+    protected function addAnnotationPrompts(McpServer $mcpServer, string $server, string $version): void
     {
-        $registeredPrompts = McpCollector::getPrompts($server);
+        $registeredPrompts = McpCollector::getPrompts($server, $version);
         foreach ($registeredPrompts as $registeredPrompt) {
             $mcpServer->registerPrompt($registeredPrompt);
         }
     }
 
-    protected function addAnnotationResources(McpServer $mcpServer, string $server): void
+    protected function addAnnotationResources(McpServer $mcpServer, string $server, string $version): void
     {
-        $registeredResources = McpCollector::getResources($server);
+        $registeredResources = McpCollector::getResources($server, $version);
         foreach ($registeredResources as $registeredResource) {
             $mcpServer->registerResource($registeredResource);
         }

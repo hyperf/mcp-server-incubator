@@ -103,7 +103,7 @@ class McpResourceTest extends AbstractTestCase
         $this->assertEquals('', $resource->getDescription());
         $this->assertNull($resource->getMimeType());
         $this->assertNull($resource->getSize());
-        $this->assertEquals('default', $resource->getServer());
+        $this->assertEquals('', $resource->getServer());
         $this->assertTrue($resource->isEnabled());
         $this->assertFalse($resource->isTemplate());
         $this->assertEquals([], $resource->getUriTemplate());

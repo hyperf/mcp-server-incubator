@@ -25,7 +25,8 @@ class Resource extends McpAnnotation
         protected string $description = '',
         protected ?string $mimeType = null,
         protected ?int $size = null,
-        protected string $server = 'default',
+        protected string $server = '',
+        protected string $version = '',
         protected bool $enabled = true,
         protected bool $isTemplate = false,
         protected array $uriTemplate = [],
@@ -73,6 +74,11 @@ class Resource extends McpAnnotation
     public function getServer(): string
     {
         return $this->server;
+    }
+
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 
     public function isEnabled(): bool

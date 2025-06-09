@@ -27,17 +27,13 @@ class Prompt extends McpAnnotation
         protected string $name = '',
         protected string $description = '',
         protected array $arguments = [],
-        protected string $server = 'default',
+        protected string $server = '',
+        protected string $version = '',
         protected bool $enabled = true,
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
             throw new ValidationError('Prompt name must be alphanumeric, underscores, and hyphens.');
         }
-        $this->name = $name;
-        $this->description = $description;
-        $this->arguments = $arguments;
-        $this->server = $server;
-        $this->enabled = $enabled;
     }
 
     public function getName(): string
@@ -68,6 +64,11 @@ class Prompt extends McpAnnotation
     public function getServer(): string
     {
         return $this->server;
+    }
+
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 
     public function isEnabled(): bool

@@ -87,7 +87,7 @@ class McpPromptTest extends AbstractTestCase
         $prompt->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $prompt->getDescription());
-        $this->assertEquals('default', $prompt->getServer());
+        $this->assertEquals('', $prompt->getServer());
         $this->assertTrue($prompt->isEnabled());
         $this->assertIsArray($prompt->getArguments());
     }

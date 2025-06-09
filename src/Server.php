@@ -24,10 +24,10 @@ class Server
     ) {
     }
 
-    public function handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface
+    public function handle(string $server = '', string $version = '1.0.0', ?RequestInterface $request = null): ResponseInterface
     {
         $request ??= $this->container->get(RequestInterface::class);
 
-        return $this->mcpServerManager->handle($server, $request);
+        return $this->mcpServerManager->handle($server, $version, $request);
     }
 }

@@ -23,7 +23,8 @@ class Tool extends McpAnnotation
         protected string $name = '',
         protected string $description = '',
         protected array $inputSchema = [],
-        protected string $server = 'default',
+        protected string $server = '',
+        protected string $version = '',
         protected bool $enabled = true,
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
@@ -58,6 +59,11 @@ class Tool extends McpAnnotation
     public function getServer(): string
     {
         return $this->server;
+    }
+
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 
     public function isEnabled(): bool

@@ -91,7 +91,7 @@ class McpToolTest extends AbstractTestCase
         $tool->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $tool->getDescription());
-        $this->assertEquals('default', $tool->getServer());
+        $this->assertEquals('', $tool->getServer());
         $this->assertTrue($tool->isEnabled());
         $this->assertIsArray($tool->getInputSchema());
     }
