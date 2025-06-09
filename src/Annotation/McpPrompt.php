@@ -24,26 +24,15 @@ use Dtyq\PhpMcp\Types\Prompts\PromptArgument;
 #[Attribute(Attribute::TARGET_METHOD)]
 class McpPrompt extends McpAnnotation
 {
-    protected string $name = '';
-
-    protected string $description = '';
-
-    /** @var array<string, mixed> */
-    protected array $arguments = [];
-
-    protected string $group = '';
-
-    protected bool $enabled = true;
-
     /**
      * @param array<string, mixed> $arguments
      */
     public function __construct(
-        string $name = '',
-        string $description = '',
-        array $arguments = [],
-        string $group = '',
-        bool $enabled = true,
+        protected string $name = '',
+        protected string $description = '',
+        protected array $arguments = [],
+        protected string $server = 'default',
+        protected bool $enabled = true,
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
             throw new ValidationError('Prompt name must be alphanumeric, underscores, and hyphens.');
@@ -51,7 +40,7 @@ class McpPrompt extends McpAnnotation
         $this->name = $name;
         $this->description = $description;
         $this->arguments = $arguments;
-        $this->group = $group;
+        $this->server = $server;
         $this->enabled = $enabled;
     }
 
@@ -80,9 +69,9 @@ class McpPrompt extends McpAnnotation
         return $this->arguments;
     }
 
-    public function getGroup(): string
+    public function getServer(): string
     {
-        return $this->group;
+        return $this->server;
     }
 
     public function isEnabled(): bool

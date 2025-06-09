@@ -23,35 +23,16 @@ use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 #[Attribute(Attribute::TARGET_METHOD)]
 class McpTool extends McpAnnotation
 {
-    protected string $name = '';
-
-    protected string $description = '';
-
-    /** @var array<string, mixed> */
-    protected array $inputSchema = [];
-
-    protected string $group = '';
-
-    protected bool $enabled = true;
-
-    /**
-     * @param array<string, mixed> $inputSchema
-     */
     public function __construct(
-        string $name = '',
-        string $description = '',
-        array $inputSchema = [],
-        string $group = '',
-        bool $enabled = true,
+        protected string $name = '',
+        protected string $description = '',
+        protected array $inputSchema = [],
+        protected string $server = 'default',
+        protected bool $enabled = true,
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
             throw new ValidationError('Tool name must be alphanumeric and underscores.');
         }
-        $this->name = $name;
-        $this->description = $description;
-        $this->inputSchema = $inputSchema;
-        $this->group = $group;
-        $this->enabled = $enabled;
     }
 
     public function getName(): string
@@ -78,9 +59,9 @@ class McpTool extends McpAnnotation
         return $this->inputSchema;
     }
 
-    public function getGroup(): string
+    public function getServer(): string
     {
-        return $this->group;
+        return $this->server;
     }
 
     public function isEnabled(): bool

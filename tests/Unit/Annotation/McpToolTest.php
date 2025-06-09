@@ -27,12 +27,12 @@ class McpToolTest extends AbstractTestCase
         $tool = new McpTool(
             name: 'valid_tool_name',
             description: 'A valid tool',
-            group: 'test'
+            server: 'test'
         );
 
         $this->assertEquals('valid_tool_name', $tool->getName());
         $this->assertEquals('A valid tool', $tool->getDescription());
-        $this->assertEquals('test', $tool->getGroup());
+        $this->assertEquals('test', $tool->getServer());
         $this->assertTrue($tool->isEnabled());
     }
 
@@ -91,7 +91,7 @@ class McpToolTest extends AbstractTestCase
         $tool->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $tool->getDescription());
-        $this->assertEquals('', $tool->getGroup());
+        $this->assertEquals('default', $tool->getServer());
         $this->assertTrue($tool->isEnabled());
         $this->assertIsArray($tool->getInputSchema());
     }

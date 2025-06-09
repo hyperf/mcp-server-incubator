@@ -47,28 +47,28 @@ class McpCollector
     /**
      * @return array<string, RegisteredTool>
      */
-    public static function getTools(string $group = ''): array
+    public static function getTools(string $server = ''): array
     {
         self::collect();
-        return self::$tools[$group] ?? [];
+        return self::$tools[$server] ?? [];
     }
 
     /**
      * @return array<string, RegisteredPrompt>
      */
-    public static function getPrompts(string $group = ''): array
+    public static function getPrompts(string $server = ''): array
     {
         self::collect();
-        return self::$prompts[$group] ?? [];
+        return self::$prompts[$server] ?? [];
     }
 
     /**
      * @return array<string, RegisteredResource>
      */
-    public static function getResources(string $group = ''): array
+    public static function getResources(string $server = ''): array
     {
         self::collect();
-        return self::$resources[$group] ?? [];
+        return self::$resources[$server] ?? [];
     }
 
     public static function collect(): void
@@ -115,7 +115,7 @@ class McpCollector
                     return $instance->{$method}(...$arguments);
                 }
             );
-            self::$tools[$mcpTool->getGroup()][$mcpTool->getName()] = $registeredTool;
+            self::$tools[$mcpTool->getServer()][$mcpTool->getName()] = $registeredTool;
         }
     }
 
@@ -151,7 +151,7 @@ class McpCollector
                     return $instance->{$method}(...$arguments);
                 }
             );
-            self::$prompts[$mcpPrompt->getGroup()][$mcpPrompt->getName()] = $registeredPrompt;
+            self::$prompts[$mcpPrompt->getServer()][$mcpPrompt->getName()] = $registeredPrompt;
         }
     }
 
@@ -186,7 +186,7 @@ class McpCollector
                     return $instance->{$method}();
                 }
             );
-            self::$resources[$mcpResource->getGroup()][$mcpResource->getName()] = $resource;
+            self::$resources[$mcpResource->getServer()][$mcpResource->getName()] = $resource;
         }
     }
 }

@@ -28,10 +28,10 @@ class Server
         $this->mcpServerManager = $container->get(McpServerManager::class);
     }
 
-    public function handle(string $group = '', ?RequestInterface $request = null): ResponseInterface
+    public function handle(string $server = '', ?RequestInterface $request = null): ResponseInterface
     {
         $request ??= $this->container->get(RequestInterface::class);
 
-        return $this->mcpServerManager->handle($group, $request);
+        return $this->mcpServerManager->handle($server, $request);
     }
 }

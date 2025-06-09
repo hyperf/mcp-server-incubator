@@ -21,7 +21,7 @@ class MockService
     #[McpTool(
         name: 'test_tool',
         description: 'A test tool for unit testing',
-        group: 'test'
+        server: 'test'
     )]
     public function testTool(string $input): string
     {
@@ -31,7 +31,7 @@ class MockService
     #[McpTool(
         name: 'math_add',
         description: 'Add two numbers',
-        group: 'math'
+        server: 'math'
     )]
     public function addNumbers(int $a, int $b): int
     {
@@ -41,7 +41,7 @@ class MockService
     #[McpPrompt(
         name: 'test_prompt',
         description: 'A test prompt for unit testing',
-        group: 'test'
+        server: 'test'
     )]
     public function testPrompt(string $topic): string
     {
@@ -53,7 +53,7 @@ class MockService
         uri: 'mcp://test/resource',
         description: 'A test resource for unit testing',
         mimeType: 'application/json',
-        group: 'test'
+        server: 'test'
     )]
     public function testResource(): array
     {

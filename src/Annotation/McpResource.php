@@ -23,35 +23,16 @@ use ReflectionClass;
 #[Attribute(Attribute::TARGET_METHOD)]
 class McpResource extends McpAnnotation
 {
-    protected string $name = '';
-
-    protected string $uri = '';
-
-    protected string $description = '';
-
-    protected ?string $mimeType = null;
-
-    protected ?int $size = null;
-
-    protected string $group = '';
-
-    protected bool $enabled = true;
-
-    protected bool $isTemplate = false;
-
-    /** @var array<string, mixed> */
-    protected array $uriTemplate = [];
-
     public function __construct(
-        string $name = '',
-        string $uri = '',
-        string $description = '',
-        ?string $mimeType = null,
-        ?int $size = null,
-        string $group = '',
-        bool $enabled = true,
-        bool $isTemplate = false,
-        array $uriTemplate = [],
+        protected string $name = '',
+        protected string $uri = '',
+        protected string $description = '',
+        protected ?string $mimeType = null,
+        protected ?int $size = null,
+        protected string $server = 'default',
+        protected bool $enabled = true,
+        protected bool $isTemplate = false,
+        protected array $uriTemplate = [],
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
             throw new ToolError('Resource name must be alphanumeric, underscores, and hyphens.');
@@ -60,16 +41,6 @@ class McpResource extends McpAnnotation
         if ($uri !== '' && ! $this->isValidUri($uri)) {
             throw new ToolError('Resource URI must be a valid URI format.');
         }
-
-        $this->name = $name;
-        $this->uri = $uri;
-        $this->description = $description;
-        $this->mimeType = $mimeType;
-        $this->size = $size;
-        $this->group = $group;
-        $this->enabled = $enabled;
-        $this->isTemplate = $isTemplate;
-        $this->uriTemplate = $uriTemplate;
     }
 
     public function getName(): string
@@ -103,9 +74,9 @@ class McpResource extends McpAnnotation
         return $this->size;
     }
 
-    public function getGroup(): string
+    public function getServer(): string
     {
-        return $this->group;
+        return $this->server;
     }
 
     public function isEnabled(): bool

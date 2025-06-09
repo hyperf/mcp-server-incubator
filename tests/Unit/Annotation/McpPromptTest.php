@@ -27,12 +27,12 @@ class McpPromptTest extends AbstractTestCase
         $prompt = new McpPrompt(
             name: 'valid_prompt_name',
             description: 'A valid prompt',
-            group: 'test'
+            server: 'test'
         );
 
         $this->assertEquals('valid_prompt_name', $prompt->getName());
         $this->assertEquals('A valid prompt', $prompt->getDescription());
-        $this->assertEquals('test', $prompt->getGroup());
+        $this->assertEquals('test', $prompt->getServer());
         $this->assertTrue($prompt->isEnabled());
     }
 
@@ -87,7 +87,7 @@ class McpPromptTest extends AbstractTestCase
         $prompt->collectMethod('HyperfTest\McpServer\Stubs\TestAnnotationClass', 'testMethod');
 
         $this->assertEquals('', $prompt->getDescription());
-        $this->assertEquals('', $prompt->getGroup());
+        $this->assertEquals('default', $prompt->getServer());
         $this->assertTrue($prompt->isEnabled());
         $this->assertIsArray($prompt->getArguments());
     }
