@@ -13,7 +13,8 @@
 - 📦 **Redis 会话管理**: 内置 Redis 会话管理器，支持分布式部署
 - 🎯 **类型安全**: 完整的类型提示和 JSON Schema 验证
 - 🔒 **安全性**: 支持会话过期、元数据存储和访问控制
-- 🎨 **灵活配置**: 支持分组管理和动态启用/禁用功能
+- 🏗️ **多服务器架构**: 支持多个 MCP 服务器实例，便于功能分组和管理
+- 🎨 **灵活配置**: 支持服务器分组管理和动态启用/禁用功能
 
 ## 安装
 
@@ -56,28 +57,29 @@ return [
 
 ### 2. 定义工具
 
-使用 `#[McpTool]` 注解定义 MCP 工具：
+使用 `#[Tool]` 注解定义 MCP 工具：
 
 ```php
 <?php
 
-use Hyperf\McpServer\Annotation\McpTool;
+use Hyperf\McpServer\Annotation\Tool;
 
 class CalculatorService
 {
-    #[McpTool(
+    #[Tool(
         name: 'add_numbers',
         description: '计算两个数字的和',
-        group: 'math'
+        server: 'math'
     )]
     public function addNumbers(int $a, int $b): int
     {
         return $a + $b;
     }
     
-    #[McpTool(
+    #[Tool(
         name: 'multiply',
-        description: '计算两个数字的乘积'
+        description: '计算两个数字的乘积',
+        server: 'math'
     )]
     public function multiply(float $x, float $y): float
     {
@@ -88,19 +90,19 @@ class CalculatorService
 
 ### 3. 定义提示
 
-使用 `#[McpPrompt]` 注解定义智能提示：
+使用 `#[Prompt]` 注解定义智能提示：
 
 ```php
 <?php
 
-use Hyperf\McpServer\Annotation\McpPrompt;
+use Hyperf\McpServer\Annotation\Prompt;
 
 class PromptService
 {
-    #[McpPrompt(
+    #[Prompt(
         name: 'code_review',
         description: '代码审查提示模板',
-        group: 'development'
+        server: 'development'
     )]
     public function codeReviewPrompt(string $language, string $code): string
     {
@@ -111,20 +113,21 @@ class PromptService
 
 ### 4. 定义资源
 
-使用 `#[McpResource]` 注解定义可访问的资源：
+使用 `#[Resource]` 注解定义可访问的资源：
 
 ```php
 <?php
 
-use Hyperf\McpServer\Annotation\McpResource;
+use Hyperf\McpServer\Annotation\Resource;
 
 class DocumentService
 {
-    #[McpResource(
+    #[Resource(
         name: 'api_docs',
         uri: 'mcp://docs/api',
         description: 'API 文档资源',
-        mimeType: 'application/json'
+        mimeType: 'application/json',
+        server: 'docs'
     )]
     public function getApiDocs(): array
     {
@@ -154,20 +157,20 @@ use Hyperf\McpServer\Server;
 class McpController
 {
     public function __construct(
-        private Server $mcpServer
+        private Server $server
     ) {}
     
     #[RequestMapping(path: '/mcp', methods: ['GET', 'POST'])]
     public function handle()
     {
-        return $this->mcpServer->handler();
+        return $this->server->handle();
     }
     
     #[RequestMapping(path: '/mcp/math', methods: ['GET', 'POST'])]
     public function handleMath()
     {
-        // 只处理 math 分组的工具
-        return $this->mcpServer->handler('math');
+        // 只处理 math 服务器的工具
+        return $this->server->handle('math');
     }
 }
 ```
@@ -179,38 +182,38 @@ class McpController
 ```php
 <?php
 
-use Hyperf\McpServer\Annotation\McpTool;
-use Hyperf\McpServer\Annotation\McpPrompt;
-use Hyperf\McpServer\Annotation\McpResource;
+use Hyperf\McpServer\Annotation\Tool;
+use Hyperf\McpServer\Annotation\Prompt;
+use Hyperf\McpServer\Annotation\Resource;
 
 class ComprehensiveService
 {
-    // 数学工具组
-    #[McpTool(
+    // 数学工具 - 使用 math 服务器
+    #[Tool(
         name: 'math_add',
         description: 'Add two numbers',
-        group: 'math'
+        server: 'math'
     )]
     public function addNumbers(int $a, int $b): int
     {
         return $a + $b;
     }
 
-    #[McpTool(
+    #[Tool(
         name: 'math_multiply',
         description: 'Multiply two numbers',
-        group: 'math'
+        server: 'math'
     )]
     public function multiplyNumbers(float $x, float $y): float
     {
         return $x * $y;
     }
 
-    // 文本处理工具
-    #[McpTool(
+    // 文本处理工具 - 使用默认服务器
+    #[Tool(
         name: 'text_processor',
         description: 'Process text input with various transformations',
-        group: 'text'
+        server: 'text'
     )]
     public function processText(string $input, string $operation = 'upper'): string
     {
@@ -222,24 +225,24 @@ class ComprehensiveService
         };
     }
 
-    // 代码审查提示
-    #[McpPrompt(
+    // 代码审查提示 - 使用 development 服务器
+    #[Prompt(
         name: 'code_review',
         description: 'Generate code review prompt',
-        group: 'development'
+        server: 'development'
     )]
     public function codeReviewPrompt(string $language, string $code): string
     {
         return "请审查以下 {$language} 代码：\n\n```{$language}\n{$code}\n```\n\n请关注：\n- 代码质量\n- 潜在问题\n- 改进建议";
     }
 
-    // API 文档资源
-    #[McpResource(
+    // API 文档资源 - 使用 docs 服务器
+    #[Resource(
         name: 'api_docs',
         uri: 'mcp://docs/api',
         description: 'API documentation resource',
         mimeType: 'application/json',
-        group: 'docs'
+        server: 'docs'
     )]
     public function getApiDocs(): array
     {
@@ -262,7 +265,7 @@ class ComprehensiveService
     }
 
     // 可以禁用的工具示例
-    #[McpTool(
+    #[Tool(
         name: 'experimental_feature',
         description: 'An experimental feature that can be disabled',
         enabled: false
@@ -334,27 +337,27 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 
 ## 注解参考
 
-### #[McpTool]
+### #[Tool]
 
 | 参数 | 类型 | 描述 | 默认值 |
 |------|------|------|--------|
 | `name` | string | 工具名称 | 方法名 |
 | `description` | string | 工具描述 | 空字符串 |
 | `inputSchema` | array | 输入参数 Schema | 自动生成 |
-| `group` | string | 分组名称 | 空字符串 |
+| `server` | string | 服务器名称 | 'default' |
 | `enabled` | bool | 是否启用 | true |
 
-### #[McpPrompt]
+### #[Prompt]
 
 | 参数 | 类型 | 描述 | 默认值 |
 |------|------|------|--------|
 | `name` | string | 提示名称 | 方法名 |
 | `description` | string | 提示描述 | 空字符串 |
 | `arguments` | array | 提示参数 | 自动生成 |
-| `group` | string | 分组名称 | 空字符串 |
+| `server` | string | 服务器名称 | 'default' |
 | `enabled` | bool | 是否启用 | true |
 
-### #[McpResource]
+### #[Resource]
 
 | 参数 | 类型 | 描述 | 默认值 |
 |------|------|------|--------|
@@ -363,20 +366,22 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 | `description` | string | 资源描述 | 空字符串 |
 | `mimeType` | string\|null | MIME 类型 | null |
 | `size` | int\|null | 资源大小 | null |
-| `group` | string | 分组名称 | 空字符串 |
+| `server` | string | 服务器名称 | 'default' |
 | `enabled` | bool | 是否启用 | true |
 | `isTemplate` | bool | 是否为模板 | false |
 | `uriTemplate` | array | URI 模板参数 | 空数组 |
 
 ## API 文档
 
-### Server
+### McpServerManager
 
-主要的 MCP 服务器类，用于处理客户端请求。
+MCP 服务器管理器，支持多服务器架构。
 
 #### 方法
 
-- `handler(string $group = ''): ResponseInterface` - 处理 MCP 请求，可选择指定分组
+- `handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface` - 处理指定服务器的 MCP 请求
+- `get(string $server = 'default'): McpServer` - 获取指定的 MCP 服务器实例
+- `createMcpServer(string $name = 'McpServer', string $version = '1.0.0'): McpServer` - 创建新的 MCP 服务器实例
 
 ### RedisSessionManager
 
@@ -400,13 +405,14 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 ```text
 src/
 ├── ConfigProvider.php          # Hyperf 配置提供者
+├── McpServerManager.php        # MCP 服务器管理器
 ├── RedisSessionManager.php     # Redis 会话管理器
-├── Server.php                  # MCP 服务器主类
+├── Server.php                  # MCP 服务器类（向后兼容）
 ├── Annotation/                 # 注解定义
 │   ├── McpAnnotation.php       # 基础注解类
-│   ├── McpPrompt.php           # 提示注解
-│   ├── McpResource.php         # 资源注解
-│   └── McpTool.php             # 工具注解
+│   ├── Prompt.php              # 提示注解
+│   ├── Resource.php            # 资源注解
+│   └── Tool.php                # 工具注解
 └── Collector/                  # 注解收集器
     └── McpCollector.php        # MCP 注解收集器
 ```
@@ -414,17 +420,20 @@ src/
 ### 核心组件
 
 #### ConfigProvider
+
 自动配置 Hyperf 依赖注入容器，注册默认的会话管理器、认证器和序列化器。
 
-#### Server
-处理 MCP 协议请求的核心类，支持：
+#### McpServerManager
 
-- 工具注册和执行
-- 提示管理
-- 资源访问
-- 分组过滤
+MCP 服务器管理器，支持多服务器架构，提供：
+
+- 多服务器实例管理
+- 基于服务器名称的路由
+- 工具、提示和资源的自动注册
+- 统一的请求处理接口
 
 #### RedisSessionManager
+
 基于 Redis 的会话管理实现，提供：
 
 - 会话创建和验证
@@ -434,12 +443,13 @@ src/
 
 #### 注解系统
 
-- `#[McpTool]`: 定义可调用的工具方法
-- `#[McpPrompt]`: 定义智能提示模板
-- `#[McpResource]`: 定义可访问的资源
+- `#[Tool]`: 定义可调用的工具方法
+- `#[Prompt]`: 定义智能提示模板
+- `#[Resource]`: 定义可访问的资源
 
 #### McpCollector
-自动收集和注册所有带有 MCP 注解的方法，支持分组管理和动态启用/禁用。
+
+自动收集和注册所有带有 MCP 注解的方法，支持服务器分组管理和动态启用/禁用。
 
 ## 性能和最佳实践
 
@@ -451,10 +461,46 @@ src/
 
 ### 注解使用建议
 
-- **合理分组**: 使用 `group` 参数对相关功能进行分组，便于管理和调试
+- **合理分组**: 使用 `server` 参数对相关功能进行分组，便于管理和调试
 - **描述信息**: 为每个工具、提示和资源提供清晰的描述信息
 - **类型提示**: 充分利用 PHP 类型提示，框架会自动生成输入 Schema
 - **禁用功能**: 使用 `enabled: false` 临时禁用某些功能，而不是删除代码
+
+### 多服务器架构
+
+Hyperf MCP Server 支持多服务器架构，允许你将不同类型的功能分组到不同的服务器中：
+
+```php
+<?php
+// 数学计算服务器
+#[Tool(name: 'add', server: 'math')]
+public function add(int $a, int $b): int { return $a + $b; }
+
+// 文本处理服务器
+#[Tool(name: 'uppercase', server: 'text')]
+public function uppercase(string $text): string { return strtoupper($text); }
+
+// 默认服务器
+#[Tool(name: 'general_tool')]
+public function generalTool(): string { return 'Hello'; }
+```
+
+不同的路由可以处理不同的服务器：
+
+```php
+<?php
+// 处理数学相关的请求
+#[RequestMapping(path: '/mcp/math')]
+public function handleMath() {
+    return $this->mcpServerManager->handle('math');
+}
+
+// 处理文本相关的请求
+#[RequestMapping(path: '/mcp/text')]
+public function handleText() {
+    return $this->mcpServerManager->handle('text');
+}
+```
 
 ### 错误处理
 
@@ -462,7 +508,7 @@ src/
 <?php
 use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
 
-#[McpTool(name: 'safe_divide', description: 'Safely divide two numbers')]
+#[Tool(name: 'safe_divide', description: 'Safely divide two numbers')]
 public function safeDivide(float $a, float $b): float
 {
     if ($b === 0.0) {
@@ -471,6 +517,29 @@ public function safeDivide(float $a, float $b): float
     return $a / $b;
 }
 ```
+
+## 向后兼容性
+
+项目保留了 `Server` 类以提供向后兼容性。如果你使用的是旧版本的代码，可以继续使用：
+
+```php
+<?php
+use Hyperf\McpServer\Server;
+
+#[Controller]
+class McpController
+{
+    public function __construct(private Server $server) {}
+    
+    #[RequestMapping(path: '/mcp')]
+    public function handle()
+    {
+        return $this->server->handler(); // 使用默认服务器
+    }
+}
+```
+
+但建议升级到新的 `McpServerManager` 以享受多服务器架构的优势。
 
 ## 开发和测试
 
@@ -518,9 +587,10 @@ composer cs-fix
 ### v1.0.0 (开发中)
 
 - 初始版本发布
-- 支持基于注解的工具、提示和资源定义
+- 支持基于注解的工具、提示和资源定义（`#[Tool]`、`#[Prompt]`、`#[Resource]`）
 - Redis 会话管理，支持 UUID v4 格式的会话 ID
-- 分组管理功能
+- 多服务器架构支持，允许功能分组到不同的服务器实例
 - 完整的类型安全支持
 - 会话监控和管理功能
 - 支持会话元数据存储
+- McpServerManager 统一管理多个 MCP 服务器实例
