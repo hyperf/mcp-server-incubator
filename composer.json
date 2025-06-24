@@ -32,7 +32,7 @@
         "hyperf/redis": "~3.1.0",
         "hyperf/context": "~3.1.0",
         "hyperf/http-server": "~3.1.0",
-        "dtyq/php-mcp": "^0.1.0",
+        "dtyq/php-mcp": "^0.1.4",
         "ext-redis": "*"
     },
     "require-dev": {
