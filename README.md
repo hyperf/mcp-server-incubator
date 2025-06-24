@@ -69,7 +69,8 @@ class CalculatorService
     #[Tool(
         name: 'add_numbers',
         description: '计算两个数字的和',
-        server: 'math'
+        server: 'math',
+        version: '1.0.0'
     )]
     public function addNumbers(int $a, int $b): int
     {
@@ -79,7 +80,8 @@ class CalculatorService
     #[Tool(
         name: 'multiply',
         description: '计算两个数字的乘积',
-        server: 'math'
+        server: 'math',
+        version: '1.0.0'
     )]
     public function multiply(float $x, float $y): float
     {
@@ -102,7 +104,8 @@ class PromptService
     #[Prompt(
         name: 'code_review',
         description: '代码审查提示模板',
-        server: 'development'
+        server: 'development',
+        version: '1.0.0'
     )]
     public function codeReviewPrompt(string $language, string $code): string
     {
@@ -127,7 +130,8 @@ class DocumentService
         uri: 'mcp://docs/api',
         description: 'API 文档资源',
         mimeType: 'application/json',
-        server: 'docs'
+        server: 'docs',
+        version: '1.0.0'
     )]
     public function getApiDocs(): array
     {
@@ -170,7 +174,7 @@ class McpController
     public function handleMath()
     {
         // 只处理 math 服务器的工具
-        return $this->server->handle('math');
+        return $this->server->handle('math', '1.0.0');
     }
 }
 ```
@@ -192,7 +196,8 @@ class ComprehensiveService
     #[Tool(
         name: 'math_add',
         description: 'Add two numbers',
-        server: 'math'
+        server: 'math',
+        version: '1.0.0'
     )]
     public function addNumbers(int $a, int $b): int
     {
@@ -202,18 +207,20 @@ class ComprehensiveService
     #[Tool(
         name: 'math_multiply',
         description: 'Multiply two numbers',
-        server: 'math'
+        server: 'math',
+        version: '1.0.0'
     )]
     public function multiplyNumbers(float $x, float $y): float
     {
         return $x * $y;
     }
 
-    // 文本处理工具 - 使用默认服务器
+    // 文本处理工具 - 使用 text 服务器
     #[Tool(
         name: 'text_processor',
         description: 'Process text input with various transformations',
-        server: 'text'
+        server: 'text',
+        version: '1.0.0'
     )]
     public function processText(string $input, string $operation = 'upper'): string
     {
@@ -229,7 +236,8 @@ class ComprehensiveService
     #[Prompt(
         name: 'code_review',
         description: 'Generate code review prompt',
-        server: 'development'
+        server: 'development',
+        version: '1.0.0'
     )]
     public function codeReviewPrompt(string $language, string $code): string
     {
@@ -242,7 +250,8 @@ class ComprehensiveService
         uri: 'mcp://docs/api',
         description: 'API documentation resource',
         mimeType: 'application/json',
-        server: 'docs'
+        server: 'docs',
+        version: '1.0.0'
     )]
     public function getApiDocs(): array
     {
@@ -268,7 +277,8 @@ class ComprehensiveService
     #[Tool(
         name: 'experimental_feature',
         description: 'An experimental feature that can be disabled',
-        enabled: false
+        enabled: false,
+        version: '1.0.0'
     )]
     public function experimentalFeature(): string
     {
@@ -344,7 +354,8 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 | `name` | string | 工具名称 | 方法名 |
 | `description` | string | 工具描述 | 空字符串 |
 | `inputSchema` | array | 输入参数 Schema | 自动生成 |
-| `server` | string | 服务器名称 | 'default' |
+| `server` | string | 服务器名称 | 空字符串 |
+| `version` | string | 服务器版本 | 空字符串 |
 | `enabled` | bool | 是否启用 | true |
 
 ### #[Prompt]
@@ -354,7 +365,8 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 | `name` | string | 提示名称 | 方法名 |
 | `description` | string | 提示描述 | 空字符串 |
 | `arguments` | array | 提示参数 | 自动生成 |
-| `server` | string | 服务器名称 | 'default' |
+| `server` | string | 服务器名称 | 空字符串 |
+| `version` | string | 服务器版本 | 空字符串 |
 | `enabled` | bool | 是否启用 | true |
 
 ### #[Resource]
@@ -366,7 +378,8 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 | `description` | string | 资源描述 | 空字符串 |
 | `mimeType` | string\|null | MIME 类型 | null |
 | `size` | int\|null | 资源大小 | null |
-| `server` | string | 服务器名称 | 'default' |
+| `server` | string | 服务器名称 | 空字符串 |
+| `version` | string | 服务器版本 | 空字符串 |
 | `enabled` | bool | 是否启用 | true |
 | `isTemplate` | bool | 是否为模板 | false |
 | `uriTemplate` | array | URI 模板参数 | 空数组 |
@@ -375,12 +388,12 @@ $cleanedCount = $sessionManager->cleanupExpiredSessions();
 
 ### McpServerManager
 
-MCP 服务器管理器，支持多服务器架构。
+MCP 服务器管理器，支持多服务器架构和版本管理。
 
 #### 方法
 
-- `handle(string $server = 'default', ?RequestInterface $request = null): ResponseInterface` - 处理指定服务器的 MCP 请求
-- `get(string $server = 'default'): McpServer` - 获取指定的 MCP 服务器实例
+- `handle(string $server = '', string $version = '1.0.0', ?RequestInterface $request = null): ResponseInterface` - 处理指定服务器和版本的 MCP 请求
+- `get(string $server = '', string $version = '1.0.0'): McpServer` - 获取指定的 MCP 服务器实例
 - `createMcpServer(string $name = 'McpServer', string $version = '1.0.0'): McpServer` - 创建新的 MCP 服务器实例
 
 ### RedisSessionManager
@@ -473,15 +486,15 @@ Hyperf MCP Server 支持多服务器架构，允许你将不同类型的功能�
 ```php
 <?php
 // 数学计算服务器
-#[Tool(name: 'add', server: 'math')]
+#[Tool(name: 'add', server: 'math', version: '1.0.0')]
 public function add(int $a, int $b): int { return $a + $b; }
 
 // 文本处理服务器
-#[Tool(name: 'uppercase', server: 'text')]
+#[Tool(name: 'uppercase', server: 'text', version: '1.0.0')]
 public function uppercase(string $text): string { return strtoupper($text); }
 
 // 默认服务器
-#[Tool(name: 'general_tool')]
+#[Tool(name: 'general_tool', version: '1.0.0')]
 public function generalTool(): string { return 'Hello'; }
 ```
 
@@ -492,13 +505,13 @@ public function generalTool(): string { return 'Hello'; }
 // 处理数学相关的请求
 #[RequestMapping(path: '/mcp/math')]
 public function handleMath() {
-    return $this->mcpServerManager->handle('math');
+    return $this->mcpServerManager->handle('math', '1.0.0');
 }
 
 // 处理文本相关的请求
 #[RequestMapping(path: '/mcp/text')]
 public function handleText() {
-    return $this->mcpServerManager->handle('text');
+    return $this->mcpServerManager->handle('text', '1.0.0');
 }
 ```
 
@@ -590,7 +603,9 @@ composer cs-fix
 - 支持基于注解的工具、提示和资源定义（`#[Tool]`、`#[Prompt]`、`#[Resource]`）
 - Redis 会话管理，支持 UUID v4 格式的会话 ID
 - 多服务器架构支持，允许功能分组到不同的服务器实例
+- **新增版本管理支持**：所有注解现在都支持 `version` 参数，实现更精细的版本控制
 - 完整的类型安全支持
 - 会话监控和管理功能
 - 支持会话元数据存储
 - McpServerManager 统一管理多个 MCP 服务器实例
+- 支持服务器级别的版本管理，允许同一服务器的不同版本共存
