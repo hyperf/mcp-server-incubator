@@ -41,7 +41,7 @@ class McpPromptTest extends AbstractTestCase
     public function testCreateWithInvalidNameThrowsException(): void
     {
         $this->expectException(ValidationError::class);
-        $this->expectExceptionMessage('Prompt name must be alphanumeric, underscores, and hyphens.');
+        $this->expectExceptionMessage("Invalid value for field 'name': Prompt name must be alphanumeric, underscores, and hyphens");
 
         new Prompt(name: 'invalid name with spaces');
     }

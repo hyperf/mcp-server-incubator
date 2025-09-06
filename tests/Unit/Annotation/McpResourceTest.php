@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTest\McpServer\Unit\Annotation;
 
-use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
+use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
 use Hyperf\McpServer\Collector\Annotations\McpResource as Resource;
 use HyperfTest\McpServer\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @internal
@@ -47,16 +48,16 @@ class McpResourceTest extends AbstractTestCase
 
     public function testCreateWithInvalidNameThrowsException(): void
     {
-        $this->expectException(ToolError::class);
-        $this->expectExceptionMessage('Resource name must be alphanumeric, underscores, and hyphens.');
+        $this->expectException(ValidationError::class);
+        $this->expectExceptionMessage("Invalid value for field 'name': Resource name must be alphanumeric, underscores, and hyphens");
 
         new Resource(name: 'invalid name with spaces');
     }
 
     public function testCreateWithInvalidUriThrowsException(): void
     {
-        $this->expectException(ToolError::class);
-        $this->expectExceptionMessage('Resource URI must be a valid URI format.');
+        $this->expectException(ValidationError::class);
+        $this->expectExceptionMessage("Invalid value for field 'uri': Resource URI must be a valid URI format");
 
         new Resource(uri: 'invalid-uri');
     }
@@ -139,7 +140,7 @@ class McpResourceTest extends AbstractTestCase
      */
     public function testInvalidResourceNames(string $name): void
     {
-        $this->expectException(ToolError::class);
+        $this->expectException(ValidationError::class);
         new Resource(name: $name);
     }
 
@@ -154,9 +155,7 @@ class McpResourceTest extends AbstractTestCase
         ];
     }
 
-    /**
-     * @dataProvider validUrisProvider
-     */
+    #[DataProvider('validUrisProvider')]
     public function testValidUris(string $uri): void
     {
         $resource = new Resource(uri: $uri);
@@ -174,12 +173,10 @@ class McpResourceTest extends AbstractTestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidUrisProvider
-     */
+    #[DataProvider('invalidUrisProvider')]
     public function testInvalidUris(string $uri): void
     {
-        $this->expectException(ToolError::class);
+        $this->expectException(ValidationError::class);
         new Resource(uri: $uri);
     }
 

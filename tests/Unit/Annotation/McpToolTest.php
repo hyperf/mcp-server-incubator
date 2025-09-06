@@ -41,7 +41,7 @@ class McpToolTest extends AbstractTestCase
     public function testCreateWithInvalidNameThrowsException(): void
     {
         $this->expectException(ValidationError::class);
-        $this->expectExceptionMessage('Tool name must be alphanumeric and underscores.');
+        $this->expectExceptionMessage('Invalid value for field \'name\': Tool name must be alphanumeric and underscores');
 
         new Tool(name: 'invalid-name-with-hyphens');
     }
