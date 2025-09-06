@@ -31,7 +31,7 @@ composer require dtyq/php-mcp
 ```php
 <?php
 use Hyperf\HttpServer\Router\Router;
-use Dtyq\PhpMcp\Server\Framework\Hyperf\HyperfMcpServer;
+use Hyperf\McpServer\HyperfMcpServer;
 
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
     return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler();
@@ -56,7 +56,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpTool;
+use Hyperf\McpServer\Collector\Annotations\McpTool;
 
 class CalculatorService
 {
@@ -92,6 +92,7 @@ class CalculatorService
 ```
 
 **注解参数：**
+
 - `name`: 工具名称（默认为方法名）
 - `description`: 工具描述
 - `inputSchema`: 自定义输入 schema（为空时自动生成）
@@ -108,11 +109,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpPrompt;
 use Dtyq\PhpMcp\Types\Prompts\GetPromptResult;
 use Dtyq\PhpMcp\Types\Prompts\PromptMessage;
 use Dtyq\PhpMcp\Types\Content\TextContent;
 use Dtyq\PhpMcp\Types\Core\ProtocolConstants;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt;
 
 class PromptService
 {
@@ -154,6 +155,7 @@ class PromptService
 ```
 
 **注解参数：**
+
 - `name`: 提示名称（默认为方法名）
 - `description`: 提示描述
 - `arguments`: 自定义参数 schema（为空时自动生成）
@@ -170,8 +172,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpResource;
 use Dtyq\PhpMcp\Types\Resources\TextResourceContents;
+use Hyperf\McpServer\Collector\Annotations\McpResource;
 
 class SystemService
 {
@@ -217,6 +219,7 @@ class SystemService
 ```
 
 **注解参数：**
+
 - `name`: 资源名称（默认为方法名）
 - `uri`: 资源 URI（为空时自动生成）
 - `description`: 资源描述
@@ -244,6 +247,7 @@ public function processUser(
 ```
 
 这会生成以下 schema：
+
 ```json
 {
     "type": "object",
@@ -274,6 +278,7 @@ public function processUser(
 ```
 
 **支持的类型：**
+
 - `string` → `"type": "string"`
 - `int`, `integer` → `"type": "integer"`
 - `float`, `double` → `"type": "number"`
@@ -287,6 +292,11 @@ public function processUser(
 您可以使用分组来组织注解并加载特定分组：
 
 ```php
+<?php
+
+use Hyperf\HttpServer\Router\Router;
+use Hyperf\McpServer\HyperfMcpServer;
+
 // 只注册数学相关工具
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/math', function () {
     return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler('math');
@@ -309,18 +319,17 @@ Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Service;
 
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpTool;
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpPrompt;
-use Dtyq\PhpMcp\Server\Framework\Hyperf\Collector\Annotations\McpResource;
 use Dtyq\PhpMcp\Types\Prompts\GetPromptResult;
 use Dtyq\PhpMcp\Types\Prompts\PromptMessage;
 use Dtyq\PhpMcp\Types\Content\TextContent;
 use Dtyq\PhpMcp\Types\Core\ProtocolConstants;
 use Dtyq\PhpMcp\Types\Resources\TextResourceContents;
+use Hyperf\McpServer\Collector\Annotations\McpTool;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt;
+use Hyperf\McpServer\Collector\Annotations\McpResource;
 
 class McpDemoService
 {
@@ -559,7 +568,8 @@ class DynamicMcpResourcesListener implements ListenerInterface
 }
 ```
 
-> **提示**: 
+> **提示**:
+>
 > - 通过事件监听器动态注册的方式比静态注册更灵活，可以根据用户身份、权限等因素动态提供不同的工具和资源
 > - 后期将会增加注解机制来简化自动注册过程
 > - 工具、资源和提示都支持这种动态注册方式
@@ -611,7 +621,7 @@ return [
 
 ### 1. 项目结构
 
-```
+```shell
 hyperf-mcp-demo/
 ├── config/
 │   ├── routes.php                 # 路由配置
@@ -624,7 +634,7 @@ hyperf-mcp-demo/
 │   ├── Listener/
 │   │   └── DynamicMcpListener.php  # 动态注册监听器
 │   └── Service/
-│       └── UserService.php        # 业务服务
+│       └── UserService.php         # 业务服务
 └── composer.json
 ```
 
@@ -633,7 +643,7 @@ hyperf-mcp-demo/
 ```php
 <?php
 use Hyperf\HttpServer\Router\Router;
-use Dtyq\PhpMcp\Server\Framework\Hyperf\HyperfMcpServer;
+use Hyperf\McpServer\HyperfMcpServer;
 
 // MCP 服务端点 - 只需一行代码！
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
@@ -887,7 +897,7 @@ class UserService
         ];
         
         if (!isset($users[$userId])) {
-                            throw ValidationError::requiredFieldMissing('user', '用户 {$userId} 不存在');
+            throw ValidationError::requiredFieldMissing('user', '用户 {$userId} 不存在');
         }
         
         return ['user' => $users[$userId]];
@@ -1005,6 +1015,7 @@ curl -X POST http://localhost:9501/mcp \
 ```
 
 这个完整示例展示了：
+
 - ✅ 基于 API Key 的认证
 - ✅ 基于权限的动态工具注册
 - ✅ 会话管理
@@ -1077,5 +1088,4 @@ return [
 
 - [MCP 协议规范](https://modelcontextprotocol.io/)
 - [Hyperf 官方文档](https://hyperf.wiki/)
-- [PHP MCP 完整文档](../README.md) 
-
+- [PHP MCP 完整文档](../README.md)
