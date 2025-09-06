@@ -15,15 +15,15 @@ namespace Hyperf\McpServer\Collector;
 use Dtyq\PhpMcp\Server\FastMcp\Prompts\RegisteredPrompt;
 use Dtyq\PhpMcp\Server\FastMcp\Resources\RegisteredResource;
 use Dtyq\PhpMcp\Server\FastMcp\Tools\RegisteredTool;
+use Dtyq\PhpMcp\Shared\Exceptions\SystemException;
 use Dtyq\PhpMcp\Types\Prompts\Prompt;
 use Dtyq\PhpMcp\Types\Resources\Resource;
 use Dtyq\PhpMcp\Types\Tools\Tool;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Di\Annotation\AnnotationCollector;
-use Hyperf\McpServer\Annotation\Prompt as McpPrompt;
-use Hyperf\McpServer\Annotation\Resource as McpResource;
-use Hyperf\McpServer\Annotation\Tool as McpTool;
-use RuntimeException;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt;
+use Hyperf\McpServer\Collector\Annotations\McpResource;
+use Hyperf\McpServer\Collector\Annotations\McpTool;
 
 class McpCollector
 {
@@ -60,39 +60,36 @@ class McpCollector
     protected static array $globalResources = [];
 
     /**
+     * @param mixed $version
      * @return array<string, RegisteredTool>
      */
-    public static function getTools(string $server = '', string $version = ''): array
+    public static function getTools(string $server = '', $version = ''): array
     {
         self::collect();
-        return array_merge(
-            self::$globalTools,
-            self::$tools[self::createGroup($server, $version)] ?? []
-        );
+        $current = self::$tools[self::createGroup($server, $version)] ?? [];
+        return array_merge(self::$globalTools, $current);
     }
 
     /**
+     * @param mixed $version
      * @return array<string, RegisteredPrompt>
      */
-    public static function getPrompts(string $server = '', string $version = ''): array
+    public static function getPrompts(string $server = '', $version = ''): array
     {
         self::collect();
-        return array_merge(
-            self::$globalPrompts,
-            self::$prompts[self::createGroup($server, $version)] ?? []
-        );
+        $current = self::$prompts[self::createGroup($server, $version)] ?? [];
+        return array_merge(self::$globalPrompts, $current);
     }
 
     /**
+     * @param mixed $version
      * @return array<string, RegisteredResource>
      */
-    public static function getResources(string $server = '', string $version = ''): array
+    public static function getResources(string $server = '', $version = ''): array
     {
         self::collect();
-        return array_merge(
-            self::$globalResources,
-            self::$resources[self::createGroup($server, $version)] ?? []
-        );
+        $current = self::$resources[self::createGroup($server, $version)] ?? [];
+        return array_merge(self::$globalResources, $current);
     }
 
     public static function collect(): void
@@ -134,7 +131,7 @@ class McpCollector
                         $instance = $container->make($class);
                     }
                     if (! isset($instance) || ! method_exists($instance, $method)) {
-                        throw new RuntimeException("Method {$method} does not exist in class {$class}");
+                        throw new SystemException("Method {$method} does not exist in class {$class}");
                     }
                     return $instance->{$method}(...$arguments);
                 }
@@ -174,7 +171,7 @@ class McpCollector
                         $instance = $container->make($class);
                     }
                     if (! isset($instance) || ! method_exists($instance, $method)) {
-                        throw new RuntimeException("Method {$method} does not exist in class {$class}");
+                        throw new SystemException("Method {$method} does not exist in class {$class}");
                     }
                     return $instance->{$method}(...$arguments);
                 }
@@ -213,7 +210,7 @@ class McpCollector
                         $instance = $container->make($class);
                     }
                     if (! isset($instance) || ! method_exists($instance, $method)) {
-                        throw new RuntimeException("Method {$method} does not exist in class {$class}");
+                        throw new SystemException("Method {$method} does not exist in class {$class}");
                     }
                     return $instance->{$method}();
                 }

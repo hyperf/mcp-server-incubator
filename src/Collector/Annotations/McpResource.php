@@ -10,34 +10,66 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Hyperf\McpServer\Annotation;
+namespace Hyperf\McpServer\Collector\Annotations;
 
 use Attribute;
-use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
+use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
 use ReflectionClass;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class Resource extends McpAnnotation
+class McpResource extends McpAnnotation
 {
+    protected string $name = '';
+
+    protected string $uri = '';
+
+    protected string $description = '';
+
+    protected ?string $mimeType = null;
+
+    protected ?int $size = null;
+
+    protected string $server = '';
+
+    protected string $version = '';
+
+    protected bool $enabled = true;
+
+    protected bool $isTemplate = false;
+
+    /** @var array<string, mixed> */
+    protected array $uriTemplate = [];
+
     public function __construct(
-        protected string $name = '',
-        protected string $uri = '',
-        protected string $description = '',
-        protected ?string $mimeType = null,
-        protected ?int $size = null,
-        protected string $server = '',
-        protected string $version = '',
-        protected bool $enabled = true,
-        protected bool $isTemplate = false,
-        protected array $uriTemplate = [],
+        string $name = '',
+        string $uri = '',
+        string $description = '',
+        ?string $mimeType = null,
+        ?int $size = null,
+        string $server = '',
+        string $version = '',
+        bool $enabled = true,
+        bool $isTemplate = false,
+        array $uriTemplate = []
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
-            throw new ToolError('Resource name must be alphanumeric, underscores, and hyphens.');
+            throw ValidationError::invalidFieldValue('name', 'Resource name must be alphanumeric, underscores, and hyphens');
         }
 
         if ($uri !== '' && ! $this->isValidUri($uri)) {
-            throw new ToolError('Resource URI must be a valid URI format.');
+            throw ValidationError::invalidFieldValue('uri', 'Resource URI must be a valid URI format');
         }
+
+        $this->name = $name;
+        $this->uri = $uri;
+        $this->description = $description;
+        $this->mimeType = $mimeType;
+        $this->size = $size;
+        $this->server = $server;
+        $this->version = $version;
+        $this->enabled = $enabled;
+        $this->isTemplate = $isTemplate;
+        $this->uriTemplate = $uriTemplate;
     }
 
     public function getName(): string

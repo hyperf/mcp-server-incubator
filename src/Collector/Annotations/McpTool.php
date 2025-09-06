@@ -10,26 +10,48 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Hyperf\McpServer\Annotation;
+namespace Hyperf\McpServer\Collector\Annotations;
 
 use Attribute;
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
 use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class Tool extends McpAnnotation
+class McpTool extends McpAnnotation
 {
+    protected string $name = '';
+
+    protected string $description = '';
+
+    /** @var array<string, mixed> */
+    protected array $inputSchema = [];
+
+    protected string $server = '';
+
+    protected string $version = '';
+
+    protected bool $enabled = true;
+
+    /**
+     * @param array<string, mixed> $inputSchema
+     */
     public function __construct(
-        protected string $name = '',
-        protected string $description = '',
-        protected array $inputSchema = [],
-        protected string $server = '',
-        protected string $version = '',
-        protected bool $enabled = true,
+        string $name = '',
+        string $description = '',
+        array $inputSchema = [],
+        string $server = '',
+        string $version = '',
+        bool $enabled = true
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
-            throw new ValidationError('Tool name must be alphanumeric and underscores.');
+            throw ValidationError::invalidFieldValue('name', 'Tool name must be alphanumeric and underscores');
         }
+        $this->name = $name;
+        $this->description = $description;
+        $this->inputSchema = $inputSchema;
+        $this->server = $server;
+        $this->version = $version;
+        $this->enabled = $enabled;
     }
 
     public function getName(): string

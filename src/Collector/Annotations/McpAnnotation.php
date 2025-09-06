@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Hyperf\McpServer\Annotation;
+namespace Hyperf\McpServer\Collector\Annotations;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
 
