@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
-use Hyperf\McpServer\Annotation\Prompt;
 use HyperfTest\McpServer\AbstractTestCase;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt as Prompt;
 
 /**
  * @internal
