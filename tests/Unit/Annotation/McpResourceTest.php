@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
-use HyperfTest\McpServer\AbstractTestCase;
 use Hyperf\McpServer\Collector\Annotations\McpResource as Resource;
+use HyperfTest\McpServer\AbstractTestCase;
 
 /**
  * @internal
