@@ -21,7 +21,7 @@ use Hyperf\McpServer\Collector\McpCollector;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class HyperfMcpServer
+class Server
 {
     /**
      * @var array<string, <string, McpServer>>

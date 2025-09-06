@@ -31,10 +31,10 @@ composer require dtyq/php-mcp
 ```php
 <?php
 use Hyperf\HttpServer\Router\Router;
-use Hyperf\McpServer\HyperfMcpServer;
+use Hyperf\McpServer\Server;
 
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler();
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
@@ -295,21 +295,21 @@ public function processUser(
 <?php
 
 use Hyperf\HttpServer\Router\Router;
-use Hyperf\McpServer\HyperfMcpServer;
+use Hyperf\McpServer\Server;
 
 // 只注册数学相关工具
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/math', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler('math');
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('math');
 });
 
 // 注册开发工具
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/dev', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler('development');
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('development');
 });
 
 // 注册所有工具（默认分组）
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler();
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
@@ -643,11 +643,11 @@ hyperf-mcp-demo/
 ```php
 <?php
 use Hyperf\HttpServer\Router\Router;
-use Hyperf\McpServer\HyperfMcpServer;
+use Hyperf\McpServer\Server;
 
 // MCP 服务端点 - 只需一行代码！
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(HyperfMcpServer::class)->handler();
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
