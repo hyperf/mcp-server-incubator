@@ -621,7 +621,7 @@ return [
 
 ### 1. 项目结构
 
-```shell
+```bash
 hyperf-mcp-demo/
 ├── config/
 │   ├── routes.php                 # 路由配置
