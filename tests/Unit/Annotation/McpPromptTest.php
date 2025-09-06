@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
-use Hyperf\McpServer\Annotation\Prompt;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt as Prompt;
 use HyperfTest\McpServer\AbstractTestCase;
 
 /**
@@ -41,7 +41,7 @@ class McpPromptTest extends AbstractTestCase
     public function testCreateWithInvalidNameThrowsException(): void
     {
         $this->expectException(ValidationError::class);
-        $this->expectExceptionMessage('Prompt name must be alphanumeric, underscores, and hyphens.');
+        $this->expectExceptionMessage("Invalid value for field 'name': Prompt name must be alphanumeric, underscores, and hyphens");
 
         new Prompt(name: 'invalid name with spaces');
     }

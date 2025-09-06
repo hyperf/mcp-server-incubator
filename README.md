@@ -16,284 +16,570 @@
 - 🏗️ **多服务器架构**: 支持多个 MCP 服务器实例，便于功能分组和管理
 - 🎨 **灵活配置**: 支持服务器分组管理和动态启用/禁用功能
 
-## 安装
+## 🚀 快速开始
 
-### 系统要求
-
-- PHP 8.1 或更高版本
-- Hyperf 3.0 或更高版本
-- Redis 扩展
-- Redis 服务器
-
-### 使用 Composer 安装
+### 1. 安装依赖
 
 ```bash
-composer require hyperf/mcp-server-incubator
+composer require dtyq/php-mcp
 ```
 
-### 发布配置文件
+### 2. 注册路由
 
-如果你需要自定义配置，可以发布配置文件：
-
-```bash
-php bin/hyperf.php vendor:publish hyperf/mcp-server-incubator
-```
-
-## 快速开始
-
-### 1. 配置服务
-
-在你的 Hyperf 应用中发布配置：
+在路由文件中（如 `config/routes.php`）添加 MCP 路由：
 
 ```php
 <?php
-// config/autoload/dependencies.php
-return [
-    \Dtyq\PhpMcp\Server\Transports\Http\SessionManagerInterface::class => \Hyperf\McpServer\RedisSessionManager::class,
-    \Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => \Dtyq\PhpMcp\Shared\Auth\NullAuthenticator::class,
-    \Dtyq\PhpMcp\Shared\Kernel\Packer\PackerInterface::class => \Dtyq\PhpMcp\Shared\Kernel\Packer\OpisClosurePacker::class,
-];
+use Hyperf\HttpServer\Router\Router;
+use Hyperf\McpServer\Server;
+
+Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+});
 ```
 
-### 2. 定义工具
+> **注意**: ConfigProvider 会由 Hyperf 自动加载，无需手动注册到 `config/config.php`。
 
-使用 `#[Tool]` 注解定义 MCP 工具：
+## 📝 基于注解的注册
+
+注册 MCP 工具、提示和资源的最简单方法是使用注解。这种方法会自动从方法签名生成 schema 并处理注册。
+
+### 可用注解
+
+#### `#[McpTool]` - 注册工具
+
+使用 `#[McpTool]` 注解将方法注册为 MCP 工具：
 
 ```php
 <?php
+declare(strict_types=1);
 
-use Hyperf\McpServer\Annotation\Tool;
+namespace App\Service;
+
+use Hyperf\McpServer\Collector\Annotations\McpTool;
 
 class CalculatorService
 {
-    #[Tool(
-        name: 'add_numbers',
-        description: '计算两个数字的和',
-        server: 'math',
-        version: '1.0.0'
-    )]
-    public function addNumbers(int $a, int $b): int
+    #[McpTool]
+    public function calculate(string $operation, int $a, int $b): array
     {
-        return $a + $b;
+        $result = match ($operation) {
+            'add' => $a + $b,
+            'subtract' => $a - $b,
+            'multiply' => $a * $b,
+            'divide' => $a / $b,
+            default => null,
+        };
+
+        return [
+            'operation' => $operation,
+            'operands' => [$a, $b],
+            'result' => $result,
+        ];
     }
-    
-    #[Tool(
-        name: 'multiply',
-        description: '计算两个数字的乘积',
-        server: 'math',
-        version: '1.0.0'
+
+    #[McpTool(
+        name: 'advanced_calc',
+        description: '高级数学计算',
+        group: 'math'
     )]
-    public function multiply(float $x, float $y): float
+    public function advancedCalculate(string $formula, array $variables = []): float
     {
-        return $x * $y;
+        // 复杂计算逻辑
+        return 42.0;
     }
 }
 ```
 
-### 3. 定义提示
+**注解参数：**
 
-使用 `#[Prompt]` 注解定义智能提示：
+- `name`: 工具名称（默认为方法名）
+- `description`: 工具描述
+- `inputSchema`: 自定义输入 schema（为空时自动生成）
+- `group`: 工具分组，用于组织
+- `enabled`: 是否启用工具（默认：true）
+
+#### `#[McpPrompt]` - 注册提示
+
+使用 `#[McpPrompt]` 注解将方法注册为提示模板：
 
 ```php
 <?php
+declare(strict_types=1);
 
-use Hyperf\McpServer\Annotation\Prompt;
+namespace App\Service;
+
+use Dtyq\PhpMcp\Types\Prompts\GetPromptResult;
+use Dtyq\PhpMcp\Types\Prompts\PromptMessage;
+use Dtyq\PhpMcp\Types\Content\TextContent;
+use Dtyq\PhpMcp\Types\Core\ProtocolConstants;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt;
 
 class PromptService
 {
-    #[Prompt(
-        name: 'code_review',
-        description: '代码审查提示模板',
-        server: 'development',
-        version: '1.0.0'
-    )]
-    public function codeReviewPrompt(string $language, string $code): string
+    #[McpPrompt]
+    public function greeting(string $name, string $language = 'chinese'): GetPromptResult
     {
-        return "请审查以下 {$language} 代码：\n\n```{$language}\n{$code}\n```\n\n请关注：\n- 代码质量\n- 潜在问题\n- 改进建议";
-    }
-}
-```
-
-### 4. 定义资源
-
-使用 `#[Resource]` 注解定义可访问的资源：
-
-```php
-<?php
-
-use Hyperf\McpServer\Annotation\Resource;
-
-class DocumentService
-{
-    #[Resource(
-        name: 'api_docs',
-        uri: 'mcp://docs/api',
-        description: 'API 文档资源',
-        mimeType: 'application/json',
-        server: 'docs',
-        version: '1.0.0'
-    )]
-    public function getApiDocs(): array
-    {
-        return [
-            'title' => 'API Documentation',
-            'version' => '1.0.0',
-            'endpoints' => [
-                // API 端点定义
-            ]
+        $greetings = [
+            'english' => "Hello, {$name}! Welcome to the Streamable HTTP MCP server!",
+            'spanish' => "¡Hola, {$name}! ¡Bienvenido al servidor MCP Streamable HTTP!",
+            'french' => "Bonjour, {$name}! Bienvenue sur le serveur MCP Streamable HTTP!",
+            'chinese' => "你好，{$name}！欢迎使用 Streamable HTTP MCP 服务器！",
         ];
+
+        $message = new PromptMessage(
+            ProtocolConstants::ROLE_USER,
+            new TextContent($greetings[$language] ?? $greetings['chinese'])
+        );
+
+        return new GetPromptResult('问候提示', [$message]);
+    }
+
+    #[McpPrompt(
+        name: 'code_review',
+        description: '生成代码审查提示',
+        group: 'development'
+    )]
+    public function codeReview(string $code, string $language = 'php'): GetPromptResult
+    {
+        $prompt = "请审查以下 {$language} 代码：\n\n```{$language}\n{$code}\n```\n\n请提供以下方面的反馈：\n- 代码质量\n- 最佳实践\n- 潜在改进";
+        
+        $message = new PromptMessage(
+            ProtocolConstants::ROLE_USER,
+            new TextContent($prompt)
+        );
+
+        return new GetPromptResult('代码审查提示', [$message]);
     }
 }
 ```
 
-### 5. 启动服务器
+**注解参数：**
 
-创建控制器处理 MCP 请求：
+- `name`: 提示名称（默认为方法名）
+- `description`: 提示描述
+- `arguments`: 自定义参数 schema（为空时自动生成）
+- `group`: 提示分组，用于组织
+- `enabled`: 是否启用提示（默认：true）
+
+#### `#[McpResource]` - 注册资源
+
+使用 `#[McpResource]` 注解将方法注册为资源提供者：
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Service;
+
+use Dtyq\PhpMcp\Types\Resources\TextResourceContents;
+use Hyperf\McpServer\Collector\Annotations\McpResource;
+
+class SystemService
+{
+    #[McpResource]
+    public function systemInfo(): TextResourceContents
+    {
+        $info = [
+            'php_version' => PHP_VERSION,
+            'os' => PHP_OS,
+            'memory_usage' => memory_get_usage(true),
+            'timestamp' => date('c'),
+            'pid' => getmypid(),
+        ];
+
+        return new TextResourceContents(
+            'mcp://system/info',
+            json_encode($info, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            'application/json'
+        );
+    }
+
+    #[McpResource(
+        name: 'server_config',
+        uri: 'mcp://system/config',
+        description: '服务器配置数据',
+        mimeType: 'application/json'
+    )]
+    public function serverConfig(): TextResourceContents
+    {
+        $config = [
+            'environment' => env('APP_ENV', 'production'),
+            'debug' => env('APP_DEBUG', false),
+            'timezone' => date_default_timezone_get(),
+        ];
+
+        return new TextResourceContents(
+            'mcp://system/config',
+            json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            'application/json'
+        );
+    }
+}
+```
+
+**注解参数：**
+
+- `name`: 资源名称（默认为方法名）
+- `uri`: 资源 URI（为空时自动生成）
+- `description`: 资源描述
+- `mimeType`: 资源 MIME 类型
+- `size`: 资源大小（字节）
+- `group`: 资源分组，用于组织
+- `enabled`: 是否启用资源（默认：true）
+- `isTemplate`: 是否为模板资源
+- `uriTemplate`: URI 模板参数
+
+### Schema 自动生成
+
+注解系统会自动从方法签名生成 JSON schema：
+
+```php
+#[McpTool]
+public function processUser(
+    string $userId,           // 必需的字符串参数
+    int $age = 18,           // 可选的整数参数，有默认值
+    bool $active = true,     // 可选的布尔参数，有默认值
+    array $tags = []         // 可选的数组参数，默认为空数组
+): array {
+    // 实现代码
+}
+```
+
+这会生成以下 schema：
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "userId": {
+            "type": "string",
+            "description": "Parameter: userId"
+        },
+        "age": {
+            "type": "integer",
+            "description": "Parameter: age",
+            "default": 18
+        },
+        "active": {
+            "type": "boolean",
+            "description": "Parameter: active",
+            "default": true
+        },
+        "tags": {
+            "type": "array",
+            "description": "Parameter: tags",
+            "items": {"type": "string"},
+            "default": []
+        }
+    },
+    "required": ["userId"]
+}
+```
+
+**支持的类型：**
+
+- `string` → `"type": "string"`
+- `int`, `integer` → `"type": "integer"`
+- `float`, `double` → `"type": "number"`
+- `bool`, `boolean` → `"type": "boolean"`
+- `array` → `"type": "array"`
+
+> **注意**: 不支持复杂类型（类、接口、联合类型）。自动 schema 生成只允许基本 PHP 类型。
+
+### 基于分组的注册
+
+您可以使用分组来组织注解并加载特定分组：
 
 ```php
 <?php
 
-use Hyperf\HttpServer\Annotation\Controller;
-use Hyperf\HttpServer\Annotation\RequestMapping;
+use Hyperf\HttpServer\Router\Router;
 use Hyperf\McpServer\Server;
 
-#[Controller]
-class McpController
-{
-    public function __construct(
-        private Server $server
-    ) {}
-    
-    #[RequestMapping(path: '/mcp', methods: ['GET', 'POST'])]
-    public function handle()
-    {
-        return $this->server->handle();
-    }
-    
-    #[RequestMapping(path: '/mcp/math', methods: ['GET', 'POST'])]
-    public function handleMath()
-    {
-        // 只处理 math 服务器的工具
-        return $this->server->handle('math', '1.0.0');
-    }
-}
+// 只注册数学相关工具
+Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/math', function () {
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('math');
+});
+
+// 注册开发工具
+Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/dev', function () {
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('development');
+});
+
+// 注册所有工具（默认分组）
+Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+});
 ```
 
-## 完整示例
+### 完整注解示例
 
-这里是一个完整的服务示例，展示如何使用所有注解功能：
+这是一个使用所有三种注解类型的完整服务类：
 
 ```php
 <?php
 
-use Hyperf\McpServer\Annotation\Tool;
-use Hyperf\McpServer\Annotation\Prompt;
-use Hyperf\McpServer\Annotation\Resource;
+namespace App\Service;
 
-class ComprehensiveService
+use Dtyq\PhpMcp\Types\Prompts\GetPromptResult;
+use Dtyq\PhpMcp\Types\Prompts\PromptMessage;
+use Dtyq\PhpMcp\Types\Content\TextContent;
+use Dtyq\PhpMcp\Types\Core\ProtocolConstants;
+use Dtyq\PhpMcp\Types\Resources\TextResourceContents;
+use Hyperf\McpServer\Collector\Annotations\McpTool;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt;
+use Hyperf\McpServer\Collector\Annotations\McpResource;
+
+class McpDemoService
 {
-    // 数学工具 - 使用 math 服务器
-    #[Tool(
-        name: 'math_add',
-        description: 'Add two numbers',
-        server: 'math',
-        version: '1.0.0'
-    )]
-    public function addNumbers(int $a, int $b): int
-    {
-        return $a + $b;
-    }
-
-    #[Tool(
-        name: 'math_multiply',
-        description: 'Multiply two numbers',
-        server: 'math',
-        version: '1.0.0'
-    )]
-    public function multiplyNumbers(float $x, float $y): float
-    {
-        return $x * $y;
-    }
-
-    // 文本处理工具 - 使用 text 服务器
-    #[Tool(
-        name: 'text_processor',
-        description: 'Process text input with various transformations',
-        server: 'text',
-        version: '1.0.0'
-    )]
-    public function processText(string $input, string $operation = 'upper'): string
-    {
-        return match($operation) {
-            'upper' => strtoupper($input),
-            'lower' => strtolower($input),
-            'reverse' => strrev($input),
-            default => $input
-        };
-    }
-
-    // 代码审查提示 - 使用 development 服务器
-    #[Prompt(
-        name: 'code_review',
-        description: 'Generate code review prompt',
-        server: 'development',
-        version: '1.0.0'
-    )]
-    public function codeReviewPrompt(string $language, string $code): string
-    {
-        return "请审查以下 {$language} 代码：\n\n```{$language}\n{$code}\n```\n\n请关注：\n- 代码质量\n- 潜在问题\n- 改进建议";
-    }
-
-    // API 文档资源 - 使用 docs 服务器
-    #[Resource(
-        name: 'api_docs',
-        uri: 'mcp://docs/api',
-        description: 'API documentation resource',
-        mimeType: 'application/json',
-        server: 'docs',
-        version: '1.0.0'
-    )]
-    public function getApiDocs(): array
+    #[McpTool(description: '回显消息')]
+    public function echo(string $message): array
     {
         return [
-            'title' => 'API Documentation',
-            'version' => '1.0.0',
-            'endpoints' => [
-                [
-                    'path' => '/api/tools',
-                    'method' => 'GET',
-                    'description' => 'List all available tools'
-                ],
-                [
-                    'path' => '/api/prompts',
-                    'method' => 'GET',
-                    'description' => 'List all available prompts'
-                ]
-            ]
+            'echo' => $message,
+            'timestamp' => time(),
         ];
     }
 
-    // 可以禁用的工具示例
-    #[Tool(
-        name: 'experimental_feature',
-        description: 'An experimental feature that can be disabled',
-        enabled: false,
-        version: '1.0.0'
-    )]
-    public function experimentalFeature(): string
+    #[McpPrompt(description: '生成欢迎消息')]
+    public function welcome(string $username): GetPromptResult
     {
-        return 'This feature is currently disabled';
+        $message = new PromptMessage(
+            ProtocolConstants::ROLE_USER,
+            new TextContent("欢迎 {$username} 来到我们的 MCP 服务器！")
+        );
+
+        return new GetPromptResult('欢迎消息', [$message]);
+    }
+
+    #[McpResource(description: '当前服务器状态')]
+    public function status(): TextResourceContents
+    {
+        $status = [
+            'status' => 'healthy',
+            'uptime' => time() - $_SERVER['REQUEST_TIME'],
+            'memory' => round(memory_get_usage() / 1024 / 1024, 2) . ' MB',
+        ];
+
+        return new TextResourceContents(
+            'mcp://server/status',
+            json_encode($status, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            'application/json'
+        );
     }
 }
 ```
 
-## 高级配置
+## 🔧 高级配置
 
-### Redis 配置
+### 自定义认证
+
+如果需要自定义认证，可以实现 `AuthenticatorInterface`：
 
 ```php
 <?php
-// config/autoload/redis.php
+declare(strict_types=1);
+
+namespace App\Auth;
+
+use Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface;
+use Dtyq\PhpMcp\Shared\Exceptions\AuthenticationError;
+use Dtyq\PhpMcp\Types\Auth\AuthInfo;
+use Hyperf\HttpServer\Contract\RequestInterface;
+
+class CustomAuthenticator implements AuthenticatorInterface
+{
+    public function __construct(
+        protected RequestInterface $request,
+    ) {
+    }
+
+    public function authenticate(): AuthInfo
+    {
+        $apiKey = $this->request->header('X-API-Key');
+        
+        // 实现您的认证逻辑
+        if (!$this->validateApiKey($apiKey)) {
+            throw new AuthenticationError('Authentication failed');
+        }
+        
+        return AuthInfo::create(
+            subject: 'user-123',
+            scopes: ['read', 'write'],
+            metadata: ['api_key' => $apiKey]
+        );
+    }
+    
+    private function validateApiKey(string $apiKey): bool
+    {
+        // 您的 API 密钥验证逻辑
+        return $apiKey === 'your-secret-api-key';
+    }
+}
+```
+
+然后在配置中绑定：
+
+```php
+// config/autoload/dependencies.php
+return [
+    \Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => App\Auth\CustomAuthenticator::class,
+];
+```
+
+### 动态传输元数据管理
+
+您可以监听 `HttpTransportAuthenticatedEvent` 事件来动态注册工具、资源和提示：
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Listener;
+
+use App\Service\UserToolService;
+use Dtyq\PhpMcp\Server\Transports\Http\Event\HttpTransportAuthenticatedEvent;
+use Dtyq\PhpMcp\Types\Tools\Tool;
+use Dtyq\PhpMcp\Types\Resources\Resource;
+use Dtyq\PhpMcp\Types\Prompts\Prompt;
+use Hyperf\Event\Annotation\Listener;
+use Hyperf\Event\Contract\ListenerInterface;
+use Psr\Container\ContainerInterface;
+
+#[Listener]
+class DynamicMcpResourcesListener implements ListenerInterface
+{
+    public function __construct(
+        protected ContainerInterface $container,
+    ) {
+    }
+
+    public function listen(): array
+    {
+        return [
+            HttpTransportAuthenticatedEvent::class,
+        ];
+    }
+
+    public function process(object $event): void
+    {
+        if (!$event instanceof HttpTransportAuthenticatedEvent) {
+            return;
+        }
+
+        $transportMetadata = $event->getTransportMetadata();
+        $authInfo = $event->getAuthInfo();
+
+        // 获取认证用户信息
+        $user = $authInfo->getMetadata('user');
+        $permissions = $authInfo->getMetadata('permissions', []);
+
+        // 动态注册工具
+        $this->registerDynamicTools($transportMetadata, $user, $permissions);
+        
+        // 动态注册资源
+        $this->registerDynamicResources($transportMetadata, $user, $permissions);
+        
+        // 动态注册提示
+        $this->registerDynamicPrompts($transportMetadata, $user, $permissions);
+    }
+
+    private function registerDynamicTools($transportMetadata, $user, array $permissions): void
+    {
+        $toolManager = $transportMetadata->getToolManager();
+        
+        // 根据用户权限注册不同的工具
+        if (in_array('user_management', $permissions)) {
+            $userTool = new Tool('get_user_info', [
+                'type' => 'object',
+                'properties' => [
+                    'user_id' => ['type' => 'integer'],
+                ],
+                'required' => ['user_id'],
+            ], '获取用户信息');
+            
+            $toolManager->register($userTool, function(array $args) use ($user) {
+                // 实现工具逻辑
+                return $this->container->get(UserToolService::class)->getUserInfo($args['user_id'], $user);
+            });
+        }
+
+        if (in_array('admin', $permissions)) {
+            $adminTool = new Tool('admin_operation', [
+                'type' => 'object',
+                'properties' => [
+                    'action' => ['type' => 'string'],
+                    'target' => ['type' => 'string'],
+                ],
+                'required' => ['action'],
+            ], '执行管理员操作');
+            
+            $toolManager->register($adminTool, function(array $args) {
+                // 管理员专用工具逻辑
+                return ['result' => "Admin action: {$args['action']}"];
+            });
+        }
+    }
+
+    private function registerDynamicResources($transportMetadata, $user, array $permissions): void
+    {
+        $resourceManager = $transportMetadata->getResourceManager();
+        
+        // 根据权限注册资源
+        if (in_array('read_users', $permissions)) {
+            $usersResource = new Resource('users', 'application/json', '用户列表');
+            $resourceManager->register($usersResource, function() use ($user) {
+                // 返回用户有权限访问的用户列表
+                return json_encode(['users' => ['Alice', 'Bob']]);
+            });
+        }
+
+        if (in_array('read_reports', $permissions)) {
+            $reportsResource = new Resource('reports', 'application/json', '报告数据');
+            $resourceManager->register($reportsResource, function() {
+                return json_encode(['reports' => ['report1', 'report2']]);
+            });
+        }
+    }
+
+    private function registerDynamicPrompts($transportMetadata, $user, array $permissions): void
+    {
+        $promptManager = $transportMetadata->getPromptManager();
+        
+        // 根据用户角色注册提示模板
+        if (in_array('content_creator', $permissions)) {
+            $contentPrompt = new Prompt('create_content', [
+                'type' => 'object',
+                'properties' => [
+                    'topic' => ['type' => 'string'],
+                    'style' => ['type' => 'string'],
+                ],
+                'required' => ['topic'],
+            ], '内容创作提示模板');
+            
+            $promptManager->register($contentPrompt, function(array $args) {
+                return [
+                    'prompt' => "请为主题'{$args['topic']}'创作内容，风格：" . ($args['style'] ?? '正式'),
+                ];
+            });
+        }
+    }
+}
+```
+
+> **提示**:
+>
+> - 通过事件监听器动态注册的方式比静态注册更灵活，可以根据用户身份、权限等因素动态提供不同的工具和资源
+> - 后期将会增加注解机制来简化自动注册过程
+> - 工具、资源和提示都支持这种动态注册方式
+
+### Redis 会话管理配置
+
+默认使用 Redis 进行会话管理。您可以在 `config/autoload/redis.php` 中配置 Redis 连接：
+
+```php
+<?php
 return [
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -311,301 +597,495 @@ return [
 ];
 ```
 
-### 会话 TTL 和生命周期管理
-
-RedisSessionManager 提供了完整的会话生命周期管理：
+如果需要自定义会话 TTL，可以通过依赖注入配置：
 
 ```php
-<?php
-// 创建自定义 TTL 的会话管理器
 // config/autoload/dependencies.php
+use Dtyq\PhpMcp\Server\Framework\Hyperf\RedisSessionManager;
+use Dtyq\PhpMcp\Server\Transports\Http\SessionManagerInterface;
+
 return [
-    \Hyperf\McpServer\RedisSessionManager::class => function ($container) {
-        return new \Hyperf\McpServer\RedisSessionManager(
-            $container->get(\Dtyq\PhpMcp\Shared\Kernel\Packer\PackerInterface::class),
+    SessionManagerInterface::class => function ($container) {
+        return new RedisSessionManager(
+            $container,
             $container->get(\Hyperf\Redis\RedisFactory::class),
-            3600 // 1小时会话过期时间
+            3600 // 会话 TTL 设置为 1 小时
         );
     },
 ];
 ```
 
-#### 会话监控和管理
+## 📝 完整示例
+
+以下是一个完整可运行的 Hyperf MCP 服务器示例：
+
+### 1. 项目结构
+
+```bash
+hyperf-mcp-demo/
+├── config/
+│   ├── routes.php                 # 路由配置
+│   └── autoload/
+│       ├── dependencies.php       # 依赖注入配置
+│       └── redis.php              # Redis 配置
+├── app/
+│   ├── Auth/
+│   │   └── ApiKeyAuthenticator.php # 自定义认证器
+│   ├── Listener/
+│   │   └── DynamicMcpListener.php  # 动态注册监听器
+│   └── Service/
+│       └── UserService.php         # 业务服务
+└── composer.json
+```
+
+### 2. 路由配置 (`config/routes.php`)
 
 ```php
 <?php
-// 获取会话详细信息
-$sessionDetails = $sessionManager->getSessionDetails($sessionId);
-// 返回: ['created_at' => 1234567890, 'last_activity' => 1234567890, 'ttl' => 3600]
-
-// 获取活动会话总数
-$activeCount = $sessionManager->getSessionCount();
-
-// 手动清理过期会话
-$cleanedCount = $sessionManager->cleanupExpiredSessions();
-```
-
-## 注解参考
-
-### #[Tool]
-
-| 参数 | 类型 | 描述 | 默认值 |
-|------|------|------|--------|
-| `name` | string | 工具名称 | 方法名 |
-| `description` | string | 工具描述 | 空字符串 |
-| `inputSchema` | array | 输入参数 Schema | 自动生成 |
-| `server` | string | 服务器名称 | 空字符串 |
-| `version` | string | 服务器版本 | 空字符串 |
-| `enabled` | bool | 是否启用 | true |
-
-### #[Prompt]
-
-| 参数 | 类型 | 描述 | 默认值 |
-|------|------|------|--------|
-| `name` | string | 提示名称 | 方法名 |
-| `description` | string | 提示描述 | 空字符串 |
-| `arguments` | array | 提示参数 | 自动生成 |
-| `server` | string | 服务器名称 | 空字符串 |
-| `version` | string | 服务器版本 | 空字符串 |
-| `enabled` | bool | 是否启用 | true |
-
-### #[Resource]
-
-| 参数 | 类型 | 描述 | 默认值 |
-|------|------|------|--------|
-| `name` | string | 资源名称 | 方法名 |
-| `uri` | string | 资源 URI | 自动生成 |
-| `description` | string | 资源描述 | 空字符串 |
-| `mimeType` | string\|null | MIME 类型 | null |
-| `size` | int\|null | 资源大小 | null |
-| `server` | string | 服务器名称 | 空字符串 |
-| `version` | string | 服务器版本 | 空字符串 |
-| `enabled` | bool | 是否启用 | true |
-| `isTemplate` | bool | 是否为模板 | false |
-| `uriTemplate` | array | URI 模板参数 | 空数组 |
-
-## API 文档
-
-### McpServerManager
-
-MCP 服务器管理器，支持多服务器架构和版本管理。
-
-#### 方法
-
-- `handle(string $server = '', string $version = '1.0.0', ?RequestInterface $request = null): ResponseInterface` - 处理指定服务器和版本的 MCP 请求
-- `get(string $server = '', string $version = '1.0.0'): McpServer` - 获取指定的 MCP 服务器实例
-- `createMcpServer(string $name = 'McpServer', string $version = '1.0.0'): McpServer` - 创建新的 MCP 服务器实例
-
-### RedisSessionManager
-
-基于 Redis 的会话管理器实现。
-
-#### 方法
-
-- `createSession(): string` - 创建新会话
-- `isValidSession(string $sessionId): bool` - 检查会话是否有效
-- `updateSessionActivity(string $sessionId): bool` - 更新会话活动时间
-- `terminateSession(string $sessionId): bool` - 终止会话
-- `getActiveSessions(): array` - 获取所有活动会话 ID
-- `cleanupExpiredSessions(): int` - 清理过期会话
-- `setSessionMetadata(string $sessionId, array $metadata): bool` - 设置会话元数据
-- `getSessionMetadata(string $sessionId): ?array` - 获取会话元数据
-- `getSessionDetails(string $sessionId): ?array` - 获取会话详细信息（包含创建时间、最后活动时间、TTL）
-- `getSessionCount(): int` - 获取活动会话总数
-
-### 项目结构
-
-```text
-src/
-├── ConfigProvider.php          # Hyperf 配置提供者
-├── McpServerManager.php        # MCP 服务器管理器
-├── RedisSessionManager.php     # Redis 会话管理器
-├── Server.php                  # MCP 服务器类（向后兼容）
-├── Annotation/                 # 注解定义
-│   ├── McpAnnotation.php       # 基础注解类
-│   ├── Prompt.php              # 提示注解
-│   ├── Resource.php            # 资源注解
-│   └── Tool.php                # 工具注解
-└── Collector/                  # 注解收集器
-    └── McpCollector.php        # MCP 注解收集器
-```
-
-### 核心组件
-
-#### ConfigProvider
-
-自动配置 Hyperf 依赖注入容器，注册默认的会话管理器、认证器和序列化器。
-
-#### McpServerManager
-
-MCP 服务器管理器，支持多服务器架构，提供：
-
-- 多服务器实例管理
-- 基于服务器名称的路由
-- 工具、提示和资源的自动注册
-- 统一的请求处理接口
-
-#### RedisSessionManager
-
-基于 Redis 的会话管理实现，提供：
-
-- 会话创建和验证
-- 自动过期管理
-- 元数据存储
-- 活动会话跟踪
-
-#### 注解系统
-
-- `#[Tool]`: 定义可调用的工具方法
-- `#[Prompt]`: 定义智能提示模板
-- `#[Resource]`: 定义可访问的资源
-
-#### McpCollector
-
-自动收集和注册所有带有 MCP 注解的方法，支持服务器分组管理和动态启用/禁用。
-
-## 性能和最佳实践
-
-### 会话管理优化
-
-- **会话 TTL 设置**: 根据实际业务需求设置合适的会话过期时间，避免过长或过短
-- **Redis 连接池**: 使用连接池来优化 Redis 连接性能
-- **批量操作**: 对于大量会话操作，考虑使用 Redis 管道或事务
-
-### 注解使用建议
-
-- **合理分组**: 使用 `server` 参数对相关功能进行分组，便于管理和调试
-- **描述信息**: 为每个工具、提示和资源提供清晰的描述信息
-- **类型提示**: 充分利用 PHP 类型提示，框架会自动生成输入 Schema
-- **禁用功能**: 使用 `enabled: false` 临时禁用某些功能，而不是删除代码
-
-### 多服务器架构
-
-Hyperf MCP Server 支持多服务器架构，允许你将不同类型的功能分组到不同的服务器中：
-
-```php
-<?php
-// 数学计算服务器
-#[Tool(name: 'add', server: 'math', version: '1.0.0')]
-public function add(int $a, int $b): int { return $a + $b; }
-
-// 文本处理服务器
-#[Tool(name: 'uppercase', server: 'text', version: '1.0.0')]
-public function uppercase(string $text): string { return strtoupper($text); }
-
-// 默认服务器
-#[Tool(name: 'general_tool', version: '1.0.0')]
-public function generalTool(): string { return 'Hello'; }
-```
-
-不同的路由可以处理不同的服务器：
-
-```php
-<?php
-// 处理数学相关的请求
-#[RequestMapping(path: '/mcp/math')]
-public function handleMath() {
-    return $this->mcpServerManager->handle('math', '1.0.0');
-}
-
-// 处理文本相关的请求
-#[RequestMapping(path: '/mcp/text')]
-public function handleText() {
-    return $this->mcpServerManager->handle('text', '1.0.0');
-}
-```
-
-### 错误处理
-
-```php
-<?php
-use Dtyq\PhpMcp\Shared\Exceptions\ToolError;
-
-#[Tool(name: 'safe_divide', description: 'Safely divide two numbers')]
-public function safeDivide(float $a, float $b): float
-{
-    if ($b === 0.0) {
-        throw new ToolError('Division by zero is not allowed');
-    }
-    return $a / $b;
-}
-```
-
-## 向后兼容性
-
-项目保留了 `Server` 类以提供向后兼容性。如果你使用的是旧版本的代码，可以继续使用：
-
-```php
-<?php
+use Hyperf\HttpServer\Router\Router;
 use Hyperf\McpServer\Server;
 
-#[Controller]
-class McpController
+// MCP 服务端点 - 只需一行代码！
+Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
+    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+});
+```
+
+### 3. 自定义认证器 (`app/Auth/ApiKeyAuthenticator.php`)
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Auth;
+
+use Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface;
+use Dtyq\PhpMcp\Shared\Exceptions\AuthenticationError;
+use Dtyq\PhpMcp\Types\Auth\AuthInfo;
+use Hyperf\HttpServer\Contract\RequestInterface;
+
+class ApiKeyAuthenticator implements AuthenticatorInterface
 {
-    public function __construct(private Server $server) {}
-    
-    #[RequestMapping(path: '/mcp')]
-    public function handle()
+    public function __construct(
+        protected RequestInterface $request,
+    ) {
+    }
+
+    public function authenticate(): AuthInfo
     {
-        return $this->server->handler(); // 使用默认服务器
+        $apiKey = $this->getRequestApiKey();
+        if (empty($apiKey)) {
+            throw new AuthenticationError('No API key provided');
+        }
+
+        // 验证 API Key
+        $userInfo = $this->validateApiKey($apiKey);
+        if (!$userInfo) {
+            throw new AuthenticationError('Invalid API key');
+        }
+
+        return AuthInfo::create(
+            subject: $userInfo['user_id'],
+            scopes: $userInfo['scopes'],
+            metadata: [
+                'user' => $userInfo,
+                'permissions' => $userInfo['permissions'],
+                'api_key' => $apiKey,
+            ]
+        );
+    }
+    
+    private function getRequestApiKey(): string
+    {
+        // 支持多种 API Key 传递方式
+        $apiKey = $this->request->header('authorization', $this->request->input('key', ''));
+        if (empty($apiKey)) {
+            // 也支持 X-API-Key 头
+            $apiKey = $this->request->header('x-api-key', '');
+        }
+        
+        if (empty($apiKey)) {
+            return '';
+        }
+        
+        // 处理 Bearer token 格式
+        if (str_starts_with($apiKey, 'Bearer ')) {
+            $apiKey = substr($apiKey, 7);
+        }
+        
+        return $apiKey;
+    }
+    
+    private function validateApiKey(string $apiKey): ?array
+    {
+        // 模拟 API Key 验证逻辑
+        // 实际项目中，这里应该是数据库查询或外部API调用
+        $validKeys = [
+            'admin-key-123' => [
+                'user_id' => 'admin',
+                'scopes' => ['*'],
+                'permissions' => ['admin', 'user_management', 'read_users', 'read_reports'],
+            ],
+            'user-key-456' => [
+                'user_id' => 'user1',
+                'scopes' => ['read', 'write'],
+                'permissions' => ['read_users'],
+            ],
+        ];
+        
+        return $validKeys[$apiKey] ?? null;
     }
 }
 ```
 
-但建议升级到新的 `McpServerManager` 以享受多服务器架构的优势。
+### 4. 动态注册监听器 (`app/Listener/DynamicMcpListener.php`)
 
-## 开发和测试
+```php
+<?php
+declare(strict_types=1);
 
-运行测试套件：
+namespace App\Listener;
 
-```bash
-composer test
+use App\Service\UserService;
+use Dtyq\PhpMcp\Server\Transports\Http\Event\HttpTransportAuthenticatedEvent;
+use Dtyq\PhpMcp\Types\Tools\Tool;
+use Dtyq\PhpMcp\Types\Resources\Resource;
+use Dtyq\PhpMcp\Types\Prompts\Prompt;
+use Hyperf\Event\Annotation\Listener;
+use Hyperf\Event\Contract\ListenerInterface;
+use Psr\Container\ContainerInterface;
+
+#[Listener]
+class DynamicMcpListener implements ListenerInterface
+{
+    public function __construct(
+        protected ContainerInterface $container,
+    ) {
+    }
+
+    public function listen(): array
+    {
+        return [HttpTransportAuthenticatedEvent::class];
+    }
+
+    public function process(object $event): void
+    {
+        if (!$event instanceof HttpTransportAuthenticatedEvent) {
+            return;
+        }
+
+        $transportMetadata = $event->getTransportMetadata();
+        $authInfo = $event->getAuthInfo();
+        
+        $permissions = $authInfo->getMetadata('permissions', []);
+        $userService = $this->container->get(UserService::class);
+
+        // 动态注册工具
+        $this->registerTools($transportMetadata, $authInfo, $permissions, $userService);
+        
+        // 动态注册资源
+        $this->registerResources($transportMetadata, $authInfo, $permissions, $userService);
+        
+        // 动态注册提示
+        $this->registerPrompts($transportMetadata, $authInfo, $permissions);
+    }
+
+    private function registerTools($transportMetadata, $authInfo, array $permissions, UserService $userService): void
+    {
+        $toolManager = $transportMetadata->getToolManager();
+        
+        // 基础工具 - 所有用户可用
+        $echoTool = new Tool('echo', [
+            'type' => 'object',
+            'properties' => ['message' => ['type' => 'string']],
+            'required' => ['message']
+        ], '回显消息');
+        
+        $toolManager->register($echoTool, function(array $args) {
+            return ['response' => $args['message'], 'timestamp' => time()];
+        });
+
+        // 用户管理工具 - 需要权限
+        if (in_array('user_management', $permissions)) {
+            $userTool = new Tool('get_user', [
+                'type' => 'object',
+                'properties' => ['user_id' => ['type' => 'string']],
+                'required' => ['user_id']
+            ], '获取用户信息');
+            
+            $toolManager->register($userTool, function(array $args) use ($userService, $authInfo) {
+                return $userService->getUserInfo($args['user_id'], $authInfo);
+            });
+        }
+
+        // 管理员工具
+        if (in_array('admin', $permissions)) {
+            $adminTool = new Tool('admin_stats', [
+                'type' => 'object',
+                'properties' => [],
+                'required' => []
+            ], '获取系统统计信息');
+            
+            $toolManager->register($adminTool, function(array $args) use ($userService) {
+                return $userService->getSystemStats();
+            });
+        }
+    }
+
+    private function registerResources($transportMetadata, $authInfo, array $permissions, UserService $userService): void
+    {
+        $resourceManager = $transportMetadata->getResourceManager();
+        
+        if (in_array('read_users', $permissions)) {
+            $usersResource = new Resource('users', 'application/json', '用户列表数据');
+            $resourceManager->register($usersResource, function() use ($userService, $authInfo) {
+                return $userService->getUsersListJson($authInfo);
+            });
+        }
+
+        if (in_array('read_reports', $permissions)) {
+            $reportsResource = new Resource('reports', 'application/json', '报告数据');
+            $resourceManager->register($reportsResource, function() use ($userService) {
+                return $userService->getReportsJson();
+            });
+        }
+    }
+
+    private function registerPrompts($transportMetadata, $authInfo, array $permissions): void
+    {
+        $promptManager = $transportMetadata->getPromptManager();
+        
+        // 基础提示模板
+        $helpPrompt = new Prompt('help', [
+            'type' => 'object',
+            'properties' => [],
+            'required' => []
+        ], '帮助信息提示');
+        
+        $promptManager->register($helpPrompt, function(array $args) use ($authInfo) {
+            $userName = $authInfo->getSubject();
+            return [
+                'prompt' => "您好 {$userName}，我是 MCP 助手。我可以帮助您使用以下功能：\n" .
+                           "- echo: 回显消息\n" .
+                           "- get_user: 获取用户信息（需要权限）\n" .
+                           "- admin_stats: 系统统计（管理员专用）"
+            ];
+        });
+    }
+}
 ```
 
-运行代码分析：
+### 5. 业务服务 (`app/Service/UserService.php`)
 
-```bash
-composer analyse
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Service;
+
+use Dtyq\PhpMcp\Types\Auth\AuthInfo;
+
+class UserService
+{
+    public function getUserInfo(string $userId, AuthInfo $authInfo): array
+    {
+        // 模拟用户数据
+        $users = [
+            'admin' => ['id' => 'admin', 'name' => '管理员', 'role' => 'admin'],
+            'user1' => ['id' => 'user1', 'name' => '张三', 'role' => 'user'],
+            'user2' => ['id' => 'user2', 'name' => '李四', 'role' => 'user'],
+        ];
+        
+        if (!isset($users[$userId])) {
+            throw ValidationError::requiredFieldMissing('user', '用户 {$userId} 不存在');
+        }
+        
+        return ['user' => $users[$userId]];
+    }
+    
+    public function getUsersListJson(AuthInfo $authInfo): string
+    {
+        $permissions = $authInfo->getMetadata('permissions', []);
+        
+        // 根据权限返回不同的用户列表
+        if (in_array('admin', $permissions)) {
+            $users = [
+                ['id' => 'admin', 'name' => '管理员', 'role' => 'admin'],
+                ['id' => 'user1', 'name' => '张三', 'role' => 'user'],
+                ['id' => 'user2', 'name' => '李四', 'role' => 'user'],
+            ];
+        } else {
+            $users = [
+                ['id' => 'user1', 'name' => '张三', 'role' => 'user'],
+                ['id' => 'user2', 'name' => '李四', 'role' => 'user'],
+            ];
+        }
+        
+        return json_encode(['users' => $users]);
+    }
+    
+    public function getReportsJson(): string
+    {
+        return json_encode([
+            'reports' => [
+                ['id' => 1, 'title' => '日报告', 'date' => date('Y-m-d')],
+                ['id' => 2, 'title' => '周报告', 'date' => date('Y-m-d', strtotime('last monday'))],
+            ]
+        ]);
+    }
+    
+    public function getSystemStats(): array
+    {
+        return [
+            'stats' => [
+                'total_users' => 3,
+                'active_sessions' => 1,
+                'uptime' => '2 hours',
+                'memory_usage' => round(memory_get_usage() / 1024 / 1024, 2) . ' MB',
+            ]
+        ];
+    }
+}
 ```
 
-修复代码风格：
+### 6. 依赖注入配置 (`config/autoload/dependencies.php`)
 
-```bash
-composer cs-fix
+```php
+<?php
+return [
+    \Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => \App\Auth\ApiKeyAuthenticator::class,
+];
 ```
 
-## 贡献
+### 7. 测试示例
 
-欢迎贡献代码！请遵循以下步骤：
+```bash
+# 1. 初始化请求（使用管理员 API Key）
+curl -X POST http://localhost:9501/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: admin-key-123" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {"name": "test-client", "version": "1.0.0"}
+    }
+  }'
 
-1. Fork 这个项目
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的修改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开一个 Pull Request
+# 2. 列出工具
+curl -X POST http://localhost:9501/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: admin-key-123" \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/list"
+  }'
 
-## 许可证
+# 3. 调用工具
+curl -X POST http://localhost:9501/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: admin-key-123" \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "echo",
+      "arguments": {"message": "Hello Hyperf MCP!"}
+    }
+  }'
 
-该项目基于 MIT 许可证开源。查看 [LICENSE](LICENSE) 文件了解更多详情。
+# 4. 获取资源
+curl -X POST http://localhost:9501/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: admin-key-123" \
+  -H "Mcp-Session-Id: YOUR_SESSION_ID" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "resources/read",
+    "params": {"uri": "users"}
+  }'
+```
 
-## 相关链接
+这个完整示例展示了：
 
-- [Hyperf 框架](https://hyperf.io)
-- [Model Context Protocol](https://github.com/modelcontextprotocol)
-- [dtyq/php-mcp](https://github.com/dtyq/php-mcp) - 核心 MCP 实现库
-- [Redis](https://redis.io)
+- ✅ 基于 API Key 的认证
+- ✅ 基于权限的动态工具注册
+- ✅ 会话管理
+- ✅ 实际可运行的代码
+- ✅ 完整的测试流程
 
-## 更新日志
+## 🧪 测试您的服务器
 
-### v1.0.0 (开发中)
+使用 cURL 测试您的 MCP 服务器：
 
-- 初始版本发布
-- 支持基于注解的工具、提示和资源定义（`#[Tool]`、`#[Prompt]`、`#[Resource]`）
-- Redis 会话管理，支持 UUID v4 格式的会话 ID
-- 多服务器架构支持，允许功能分组到不同的服务器实例
-- **新增版本管理支持**：所有注解现在都支持 `version` 参数，实现更精细的版本控制
-- 完整的类型安全支持
-- 会话监控和管理功能
-- 支持会话元数据存储
-- McpServerManager 统一管理多个 MCP 服务器实例
-- 支持服务器级别的版本管理，允许同一服务器的不同版本共存
+```bash
+# 测试工具调用
+curl -X POST http://localhost:9501/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "echo",
+      "arguments": {"message": "Hello, Hyperf MCP!"}
+    }
+  }'
+```
+
+## 🔍 故障排除
+
+### 常见问题
+
+1. **Redis 连接失败**
+   - 检查 Redis 服务是否运行
+   - 验证 Redis 配置是否正确
+
+2. **认证失败**
+   - 确保自定义认证器正确实现
+   - 检查请求头是否包含所需的认证信息
+
+3. **工具未找到**
+   - 确保工具已正确注册
+   - 检查工具名称是否匹配
+
+### 调试模式
+
+在开发环境中，您可以启用详细的错误日志：
+
+```php
+// config/autoload/logger.php
+return [
+    'default' => [
+        'handler' => [
+            'class' => \Monolog\Handler\StreamHandler::class,
+            'constructor' => [
+                'stream' => BASE_PATH . '/runtime/logs/hyperf.log',
+                'level' => \Monolog\Logger::DEBUG,
+            ],
+        ],
+        'formatter' => [
+            'class' => \Monolog\Formatter\LineFormatter::class,
+            'constructor' => [
+                'format' => null,
+                'dateFormat' => 'Y-m-d H:i:s',
+                'allowInlineLineBreaks' => true,
+            ],
+        ],
+    ],
+];
+```
+
+## 📚 更多资源
+
+- [MCP 协议规范](https://modelcontextprotocol.io/)
+- [Hyperf 官方文档](https://hyperf.wiki/)
+- [PHP MCP 完整文档](../README.md)

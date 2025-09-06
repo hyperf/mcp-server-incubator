@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTest\McpServer\Unit\Annotation;
 
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
-use Hyperf\McpServer\Annotation\Tool;
+use Hyperf\McpServer\Collector\Annotations\McpTool as Tool;
 use HyperfTest\McpServer\AbstractTestCase;
 
 /**
@@ -41,7 +41,7 @@ class McpToolTest extends AbstractTestCase
     public function testCreateWithInvalidNameThrowsException(): void
     {
         $this->expectException(ValidationError::class);
-        $this->expectExceptionMessage('Tool name must be alphanumeric and underscores.');
+        $this->expectExceptionMessage('Invalid value for field \'name\': Tool name must be alphanumeric and underscores');
 
         new Tool(name: 'invalid-name-with-hyphens');
     }

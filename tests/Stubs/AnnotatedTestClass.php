@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTest\McpServer\Stubs;
 
-use Hyperf\McpServer\Annotation\Prompt;
-use Hyperf\McpServer\Annotation\Resource;
-use Hyperf\McpServer\Annotation\Tool;
+use Hyperf\McpServer\Collector\Annotations\McpPrompt as Prompt;
+use Hyperf\McpServer\Collector\Annotations\McpResource as Resource;
+use Hyperf\McpServer\Collector\Annotations\McpTool as Tool;
 
 class AnnotatedTestClass
 {

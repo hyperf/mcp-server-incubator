@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Hyperf\McpServer\Annotation;
+namespace Hyperf\McpServer\Collector\Annotations;
 
 use Attribute;
 use Dtyq\PhpMcp\Shared\Exceptions\ValidationError;
@@ -18,22 +18,41 @@ use Dtyq\PhpMcp\Shared\Utilities\SchemaUtils;
 use Dtyq\PhpMcp\Types\Prompts\PromptArgument;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-class Prompt extends McpAnnotation
+class McpPrompt extends McpAnnotation
 {
+    protected string $name = '';
+
+    protected string $description = '';
+
+    /** @var array<string, mixed> */
+    protected array $arguments = [];
+
+    protected string $server = '';
+
+    protected string $version = '';
+
+    protected bool $enabled = true;
+
     /**
      * @param array<string, mixed> $arguments
      */
     public function __construct(
-        protected string $name = '',
-        protected string $description = '',
-        protected array $arguments = [],
-        protected string $server = '',
-        protected string $version = '',
-        protected bool $enabled = true,
+        string $name = '',
+        string $description = '',
+        array $arguments = [],
+        string $server = '',
+        string $version = '',
+        bool $enabled = true
     ) {
         if ($name !== '' && ! preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
-            throw new ValidationError('Prompt name must be alphanumeric, underscores, and hyphens.');
+            throw ValidationError::invalidFieldValue('name', 'Prompt name must be alphanumeric, underscores, and hyphens');
         }
+        $this->name = $name;
+        $this->description = $description;
+        $this->arguments = $arguments;
+        $this->server = $server;
+        $this->version = $version;
+        $this->enabled = $enabled;
     }
 
     public function getName(): string
