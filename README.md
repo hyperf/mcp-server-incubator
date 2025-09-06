@@ -280,11 +280,13 @@ public function processUser(
 
 **支持的类型：**
 
-- `string` → `"type": "string"`
-- `int`, `integer` → `"type": "integer"`
-- `float`, `double` → `"type": "number"`
-- `bool`, `boolean` → `"type": "boolean"`
-- `array` → `"type": "array"`
+| PHP 类型 | JSON Schema 类型 |
+|----------|-------------------|
+| `string` | `"type": "string"` |
+| `int`, `integer` | `"type": "integer"` |
+| `float`, `double` | `"type": "number"` |
+| `bool`, `boolean` | `"type": "boolean"` |
+| `array` | `"type": "array"` |
 
 > **注意**: 不支持复杂类型（类、接口、联合类型）。自动 schema 生成只允许基本 PHP 类型。
 
