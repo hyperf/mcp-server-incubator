@@ -21,7 +21,7 @@
 ### 1. 安装依赖
 
 ```bash
-composer require dtyq/php-mcp
+composer require hyperf/mcp-server-incubator
 ```
 
 ### 2. 注册路由
@@ -30,11 +30,12 @@ composer require dtyq/php-mcp
 
 ```php
 <?php
+use Hyperf\Context\ApplicationContext;
 use Hyperf\HttpServer\Router\Router;
 use Hyperf\McpServer\Server;
 
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+    return ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
@@ -294,22 +295,23 @@ public function processUser(
 ```php
 <?php
 
+use Hyperf\Context\ApplicationContext;
 use Hyperf\HttpServer\Router\Router;
 use Hyperf\McpServer\Server;
 
 // 只注册数学相关工具
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/math', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('math');
+    return ApplicationContext::getContainer()->get(Server::class)->handler('math');
 });
 
 // 注册开发工具
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp/dev', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler('development');
+    return ApplicationContext::getContainer()->get(Server::class)->handler('development');
 });
 
 // 注册所有工具（默认分组）
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+    return ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
@@ -379,7 +381,6 @@ class McpDemoService
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Auth;
 
@@ -424,7 +425,7 @@ class CustomAuthenticator implements AuthenticatorInterface
 ```php
 // config/autoload/dependencies.php
 return [
-    \Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => App\Auth\CustomAuthenticator::class,
+    Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => App\Auth\CustomAuthenticator::class,
 ];
 ```
 
@@ -434,7 +435,6 @@ return [
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Listener;
 
@@ -580,6 +580,7 @@ class DynamicMcpResourcesListener implements ListenerInterface
 
 ```php
 <?php
+
 return [
     'default' => [
         'host' => env('REDIS_HOST', 'localhost'),
@@ -600,6 +601,8 @@ return [
 如果需要自定义会话 TTL，可以通过依赖注入配置：
 
 ```php
+<?php
+
 // config/autoload/dependencies.php
 use Dtyq\PhpMcp\Server\Framework\Hyperf\RedisSessionManager;
 use Dtyq\PhpMcp\Server\Transports\Http\SessionManagerInterface;
@@ -642,12 +645,14 @@ hyperf-mcp-demo/
 
 ```php
 <?php
+
+use Hyperf\Context\ApplicationContext;
 use Hyperf\HttpServer\Router\Router;
 use Hyperf\McpServer\Server;
 
 // MCP 服务端点 - 只需一行代码！
 Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
-    return \Hyperf\Context\ApplicationContext::getContainer()->get(Server::class)->handler();
+    return ApplicationContext::getContainer()->get(Server::class)->handler();
 });
 ```
 
@@ -655,7 +660,6 @@ Router::addRoute(['POST', 'GET', 'DELETE'], '/mcp', function () {
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Auth;
 
@@ -699,6 +703,7 @@ class ApiKeyAuthenticator implements AuthenticatorInterface
     {
         // 支持多种 API Key 传递方式
         $apiKey = $this->request->header('authorization', $this->request->input('key', ''));
+
         if (empty($apiKey)) {
             // 也支持 X-API-Key 头
             $apiKey = $this->request->header('x-api-key', '');
@@ -742,7 +747,6 @@ class ApiKeyAuthenticator implements AuthenticatorInterface
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Listener;
 
@@ -879,7 +883,6 @@ class DynamicMcpListener implements ListenerInterface
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App\Service;
 
@@ -952,8 +955,9 @@ class UserService
 
 ```php
 <?php
+
 return [
-    \Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => \App\Auth\ApiKeyAuthenticator::class,
+    Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface::class => App\Auth\ApiKeyAuthenticator::class,
 ];
 ```
 
@@ -1062,18 +1066,19 @@ curl -X POST http://localhost:9501/mcp \
 在开发环境中，您可以启用详细的错误日志：
 
 ```php
+
 // config/autoload/logger.php
 return [
     'default' => [
         'handler' => [
-            'class' => \Monolog\Handler\StreamHandler::class,
+            'class' => Monolog\Handler\StreamHandler::class,
             'constructor' => [
                 'stream' => BASE_PATH . '/runtime/logs/hyperf.log',
-                'level' => \Monolog\Logger::DEBUG,
+                'level' => Monolog\Logger::DEBUG,
             ],
         ],
         'formatter' => [
-            'class' => \Monolog\Formatter\LineFormatter::class,
+            'class' => Monolog\Formatter\LineFormatter::class,
             'constructor' => [
                 'format' => null,
                 'dateFormat' => 'Y-m-d H:i:s',

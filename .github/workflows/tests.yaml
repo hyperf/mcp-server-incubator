@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * *'
+
+env:
+  PHP_CS_FIXER_IGNORE_ENV: 1
+
+jobs:
+  tests:
+    name: Test on PHP ${{ matrix.php }}
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        php: [ '8.1', '8.2', '8.3']
+      max-parallel: 26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: redis, pdo, pdo_mysql, bcmath
+          tools: phpize
+          coverage: none
+      - name: Install Dependencies
+        run: composer install
+      - name: Run Cs Fixer
+        run: ./vendor/bin/php-cs-fixer fix $1 --dry-run --diff --verbose --show-progress=dots
+      - name: Run Analyse
+        run: composer analyse src
+      - name: Run Test Cases
+        run: |
+          composer test
