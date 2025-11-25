@@ -12,16 +12,8 @@ declare(strict_types=1);
 
 namespace Hyperf\McpServer;
 
-use Psr\Container\ContainerInterface;
-
-class ConfigProvider
+enum ServerType: string
 {
-    public function __invoke(ContainerInterface $container): array
-    {
-        return [
-            'dependencies' => [
-                // Add your dependencies here
-            ],
-        ];
-    }
+    case HTTP = 'http';
+    case STDIO = 'stdio';
 }
