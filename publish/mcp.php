@@ -26,8 +26,8 @@ return [
                     'url' => 'https://hyperf.io/favicon.ico',
                     'width' => 16,
                     'height' => 16,
-                    'mediaType' => 'image/x-icon'
-                ]
+                    'mediaType' => 'image/x-icon',
+                ],
             ],
 
             // Server instructions for clients

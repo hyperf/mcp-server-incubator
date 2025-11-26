@@ -1,16 +1,28 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\McpServer\Listener;
 
+use Hyperf\Event\Contract\ListenerInterface;
+use Hyperf\Framework\Event\BootApplication;
 use Hyperf\McpServer\ServerManager;
 use Psr\Container\ContainerInterface;
-use Hyperf\Framework\Event\BootApplication;
 
-class RegisterMcpServerListener implements \Hyperf\Event\Contract\ListenerInterface
+class RegisterMcpServerListener implements ListenerInterface
 {
     public function __construct(protected ContainerInterface $container)
     {
     }
+
     public function listen(): array
     {
         return [
@@ -23,5 +35,4 @@ class RegisterMcpServerListener implements \Hyperf\Event\Contract\ListenerInterf
         $manager = $this->container->get(ServerManager::class);
         $manager->register();
     }
-
 }

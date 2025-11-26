@@ -22,21 +22,19 @@ use Mcp\Server;
 use Mcp\Server\Builder;
 use Mcp\Server\Handler\Notification\NotificationHandlerInterface;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
-use Mcp\Server\Session\SessionFactoryInterface;
-use Mcp\Server\Session\SessionStoreInterface;
 use Mcp\Server\Transport\StdioTransport;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface;
 
 class ServerManager
 {
     protected array $servers = [];
 
-    public function __construct( protected ContainerInterface $container, protected ConfigInterface $config ) {
+    public function __construct(protected ContainerInterface $container, protected ConfigInterface $config)
+    {
     }
 
     public function register()
