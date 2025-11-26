@@ -50,17 +50,17 @@ return [
             ],
 
             // Custom server capabilities (optional, will auto-detect if not set)
-            'capabilities' => [
-                'tools' => true,
-                'tools_list_changed' => true,
-                'resources' => true,
-                'resources_subscribe' => false,
-                'resources_list_changed' => true,
-                'prompts' => true,
-                'prompts_list_changed' => true,
-                'logging' => false,
-                'completions' => true,
-            ],
+            // 'capabilities' => [
+            //     'tools' => true,
+            //     'tools_list_changed' => true,
+            //     'resources' => true,
+            //     'resources_subscribe' => false,
+            //     'resources_list_changed' => true,
+            //     'prompts' => true,
+            //     'prompts_list_changed' => true,
+            //     'logging' => false,
+            //     'completions' => true,
+            // ],
 
             // Class discovery configuration
             'discovery' => [
