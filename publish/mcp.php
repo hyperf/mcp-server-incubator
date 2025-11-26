@@ -22,8 +22,6 @@ return [
                 'scan_dirs' => ['.', 'src', 'app'],
                 'exclude_dirs' => ['vendor', 'tests'],
             ],
-            // Whether to enable event handling
-            'event_enabled' => false,
             // Options specific to HTTP transport
             'router' => [
                 'path' => '/mcp',

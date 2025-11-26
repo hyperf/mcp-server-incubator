@@ -30,10 +30,7 @@ class ServerManager
 {
     protected array $servers = [];
 
-    public function __construct(
-        protected ContainerInterface $container,
-        protected ConfigInterface $config
-    ) {
+    public function __construct( protected ContainerInterface $container, protected ConfigInterface $config ) {
     }
 
     public function register()
@@ -65,12 +62,16 @@ class ServerManager
                 $options['discovery']['exclude_dirs'] ?? ['vendor', 'tests']
             );
 
-        if (! ($options['event_enabled'] ?? false)) {
-            $builder->setEventDispatcher($this->container->get(EventDispatcherInterface::class));
+        if ($this->container->has(EventDispatcherInterface::class)) {
+            $builder->setEventDispatcher(
+                $this->container->get(EventDispatcherInterface::class)
+            );
         }
 
         if ($this->container->has(SessionInterface::class)) {
-            $builder->setSession($this->container->get(SessionInterface::class));
+            $builder->setSession(
+                $this->container->get(SessionInterface::class)
+            );
         }
 
         return $builder->build();
