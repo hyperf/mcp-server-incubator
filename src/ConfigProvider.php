@@ -24,6 +24,9 @@ class ConfigProvider
             'dependencies' => [
                 SessionInterface::class => fn ($container) => new InMemorySessionStore(3600),
             ],
+            'listeners' => [
+                Listener\RegisterMcpServerListener::class,
+            ],
             'publish' => [
                 [
                     'id' => 'config',
