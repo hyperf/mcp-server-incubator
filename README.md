@@ -119,8 +119,7 @@ declare(strict_types=1);
 
 namespace App\Tool;
 
-use Hyperf\Di\Annotation\AnnotationCollector;
-use Mcp\Annotation\McpTool;
+use Mcp\Capability\Attribute\McpTool;
 
 #[McpTool(
     name: 'calculator.add',
@@ -162,7 +161,7 @@ declare(strict_types=1);
 
 namespace App\Resource;
 
-use Mcp\Annotation\McpResource;
+use Mcp\Capability\Attribute\McpResource;
 
 #[McpResource(
     uri: 'file:///var/log/app.log',
@@ -199,7 +198,7 @@ declare(strict_types=1);
 
 namespace App\Prompt;
 
-use Mcp\Annotation\McpPrompt;
+use Mcp\Capability\Attribute\McpPrompt;
 
 #[McpPrompt(
     name: 'code-review',
@@ -317,7 +316,7 @@ class CustomRequestHandler implements RequestHandlerInterface
 composer test
 
 # 代码分析
-composer analyse
+composer analyse src
 
 # 代码格式化
 composer cs-fix
