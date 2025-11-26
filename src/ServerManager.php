@@ -14,13 +14,17 @@ namespace Hyperf\McpServer;
 
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\HttpServer\Router\Router;
 use Mcp\Server;
 use Mcp\Server\Builder;
+use Mcp\Server\Session\SessionInterface;
 use Mcp\Server\Transport\StdioTransport;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Log\LoggerInterface;
 
 class ServerManager
 {
@@ -36,26 +40,46 @@ class ServerManager
     {
         $servers = $this->config->get('mcp.servers', []);
 
-        foreach ($servers as $name => $options) {
+        foreach ($servers as $options) {
+            if (! ($options['enabled'] ?? true)) {
+                continue;
+            }
             $server = $this->buildServer($options);
-            match ($options['type'] ?? '') {
-                ServerType::HTTP->value => $this->connectHttpTransport($server, $options),
-                ServerType::STDIO->value => $this->connectStdioTransport($server, $options),
-            };
+            ! empty($options['router'] ?? '') && $this->registerRouter($server, $options['router'] ?? []);
+            ! empty($options['command'] ?? '') && $this->registerCommand($server, $options['command'] ?? []);
         }
     }
 
     protected function buildServer(array $options): Server
     {
-        return (new Builder())
+        $builder = (new Builder())
+            ->setServerInfo(
+                name: $options['name'] ?? 'MCP Server',
+                version: $options['version'] ?? '1.0.0',
+                description: $options['description'] ?? 'A MCP server.'
+            )
             ->setContainer($this->container)
-            ->build();
+            ->setDiscovery(
+                $options['discovery']['base_path'] ?? BASE_PATH,
+                $options['discovery']['scan_dirs'] ?? ['.', 'src', 'app'],
+                $options['discovery']['exclude_dirs'] ?? ['vendor', 'tests']
+            );
+
+        if (! ($options['event_enabled'] ?? false)) {
+            $builder->setEventDispatcher($this->container->get(EventDispatcherInterface::class));
+        }
+
+        if ($this->container->has(SessionInterface::class)) {
+            $builder->setSession($this->container->get(SessionInterface::class));
+        }
+
+        return $builder->build();
     }
 
-    protected function connectHttpTransport(Server $server, array $options): void
+    protected function registerRouter(Server $server, array $options): void
     {
         Router::addRoute(
-            ['GET', 'POST'],
+            ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
             function (RequestInterface $request) use ($server) {
                 return $server->run(new StreamableHttpTransport($request));
@@ -64,28 +88,28 @@ class ServerManager
         );
     }
 
-    protected function connectStdioTransport(Server $server, array $options): void
+    protected function registerCommand(Server $server, array $options): void
     {
-        $command = new class($this->container, $server, $options['name'] ?? 'mcp:run', $options['description'] ?? 'A demo stdio mcp server command.') extends Command {
+        $command = new class($this->container, $server, $options) extends Command {
+            protected ?LoggerInterface $logger = null;
+
             public function __construct(
                 protected ContainerInterface $container,
                 protected Server $server,
-                protected ?string $name,
-                protected string $description
+                protected array $options
             ) {
-                parent::__construct($name);
-            }
-
-            public function configure(): void
-            {
-                $this->setDescription($this->description);
+                $this->signature = $this->options['signature'] ?? 'mcp:stdio';
+                $this->description = $this->options['description'] ?? 'Run the MCP stdio server.';
+                if ($this->container->has(StdoutLoggerInterface::class)) {
+                    $this->logger = $this->container->get(StdoutLoggerInterface::class);
+                }
+                parent::__construct();
             }
 
             public function handle(): int
             {
-                $this->output->writeln('MCP Stdio Server is running...');
+                $transport = new StdioTransport(logger: $this->logger);
 
-                $transport = new StdioTransport();
                 return $this->server->run($transport);
             }
         };

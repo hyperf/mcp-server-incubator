@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Hyperf\McpServer;
 
+use Mcp\Server\Session\InMemorySessionStore;
+use Mcp\Server\Session\SessionInterface;
 use Psr\Container\ContainerInterface;
 
 class ConfigProvider
@@ -20,7 +22,7 @@ class ConfigProvider
     {
         return [
             'dependencies' => [
-                // Add your dependencies here
+                SessionInterface::class => fn ($container) => new InMemorySessionStore(3600),
             ],
         ];
     }
