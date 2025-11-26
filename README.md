@@ -232,21 +232,16 @@ class CodeReviewPrompt
 
 ### 4. 启动服务器
 
-#### HTTP 方式
-
 ```bash
-# 启动 Hyperf HTTP 服务器
+# 启动 Hyperf 服务器，MCP 服务将自动注册并启动
 php bin/hyperf.php start
 ```
 
-然后可以通过 HTTP POST 请求访问 `/mcp` 端点。
+MCP 服务器会自动：
 
-#### STDIO 方式
-
-```bash
-# 使用注册的命令启动
-php bin/hyperf.php mcp:server
-```
+- 注册 HTTP 路由端点（默认为 `/mcp`）
+- 注册命令行工具（用于 STDIO 传输）
+- 根据配置自动发现并注册工具、资源和提示
 
 ## 🏗️ 架构
 
@@ -346,6 +341,10 @@ composer cs-fix
 | `session.ttl` | int | `3600` | 会话 TTL（秒） |
 | `discovery.scan_dirs` | array | `['.', 'src', 'app']` | 自动发现扫描目录 |
 | `discovery.exclude_dirs` | array | `['vendor', 'tests']` | 排除的扫描目录 |
+| `router.path` | string | `'/mcp'` | HTTP 路由路径 |
+| `router.options` | array | `[]` | 路由中间件等选项 |
+| `command.signature` | string | `'mcp:stdio'` | 命令行工具签名 |
+| `command.description` | string | `'Run MCP stdio server.'` | 命令行工具描述 |
 
 ## 🤝 贡献
 
