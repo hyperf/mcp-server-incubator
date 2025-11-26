@@ -12,26 +12,17 @@ declare(strict_types=1);
 
 namespace Hyperf\McpServer;
 
-use Dtyq\PhpMcp\Server\Transports\Http\SessionManagerInterface;
-use Dtyq\PhpMcp\Shared\Auth\AuthenticatorInterface;
-use Dtyq\PhpMcp\Shared\Auth\NullAuthenticator;
-use Dtyq\PhpMcp\Shared\Kernel\Packer\OpisClosurePacker;
-use Dtyq\PhpMcp\Shared\Kernel\Packer\PackerInterface;
+use Mcp\Server\Session\InMemorySessionStore;
+use Mcp\Server\Session\SessionInterface;
+use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    public function __invoke(): array
+    public function __invoke(ContainerInterface $container): array
     {
         return [
-            'publish' => [
-            ],
             'dependencies' => [
-                PackerInterface::class => OpisClosurePacker::class,
-                AuthenticatorInterface::class => NullAuthenticator::class,
-                SessionManagerInterface::class => RedisSessionManager::class,
+                SessionInterface::class => fn ($container) => new InMemorySessionStore(3600),
             ],
         ];
     }
