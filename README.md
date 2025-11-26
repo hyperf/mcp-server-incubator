@@ -85,16 +85,17 @@ return [
                 ],
 
                 // 路由配置（HTTP 传输）
-                'router' => [
+                'http' => [
                     'path' => '/mcp',
                     'options' => [
                         'middleware' => ['auth']
-                    ]
+                    ],
+                    // 'server' => 'http', // 指定服务器名称（可选）
                 ],
 
                 // 命令行配置（STDIO 传输）
-                'command' => [
-                    'signature' => 'mcp:server',
+                'stdio' => [
+                    'name' => 'mcp:server',
                     'description' => 'Start MCP server via STDIO'
                 ]
             ]
