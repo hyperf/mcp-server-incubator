@@ -32,6 +32,7 @@
         "hyperf/command": "~3.1.0",
         "hyperf/context": "~3.1.0",
         "hyperf/di": "~3.1.0",
+        "hyperf/framework": "~3.1.0",
         "hyperf/http-server": "~3.1.0",
         "hyperf/redis": "~3.1.0",
         "mcp/sdk": "^0.1.0"
