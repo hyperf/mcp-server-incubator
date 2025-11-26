@@ -81,7 +81,7 @@ return [
                     'base_path' => BASE_PATH,
                     'scan_dirs' => ['app', 'src'],
                     'exclude_dirs' => ['vendor', 'tests'],
-                    'cache' => \Psr\SimpleCache\CacheInterface::class,
+                    // 'cache' => \Psr\SimpleCache\CacheInterface::class,
                 ],
 
                 // 路由配置（HTTP 传输）
