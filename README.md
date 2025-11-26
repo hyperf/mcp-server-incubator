@@ -72,8 +72,8 @@ return [
                 // 会话配置
                 'session' => [
                     'ttl' => 3600,
-                    'store' => \Hyperf\McpServer\Session\RedisSessionStore::class,
-                    'factory' => \Hyperf\McpServer\Session\SessionFactory::class,
+                    'store' => \Mcp\Server\Session\SessionInterface::class,
+                    'factory' => \Mcp\Server\Session\SessionFactory::class,
                 ],
 
                 // 类发现配置
