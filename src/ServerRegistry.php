@@ -15,6 +15,7 @@ namespace Hyperf\McpServer;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Router;
 use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Schema\ServerCapabilities;
@@ -33,8 +34,11 @@ class ServerRegistry
 {
     protected array $servers = [];
 
-    public function __construct(protected ContainerInterface $container, protected ConfigInterface $config)
-    {
+    public function __construct(
+        protected DispatcherFactory $dispatcherFactory, // !!! Don't remove this line
+        protected ContainerInterface $container,
+        protected ConfigInterface $config
+    ) {
     }
 
     public function register()
