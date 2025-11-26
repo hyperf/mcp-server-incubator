@@ -26,7 +26,7 @@ class ConfigProvider
             ],
             'publish' => [
                 [
-                    'id' => 'mcp',
+                    'id' => 'config',
                     'description' => 'The configuration file of MCP server.',
                     'source' => __DIR__ . '/../publish/mcp.php',
                     'destination' => BASE_PATH . '/config/autoload/mcp.php',
