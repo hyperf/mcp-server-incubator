@@ -14,7 +14,7 @@ namespace Hyperf\McpServer\Listener;
 
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
-use Hyperf\McpServer\ServerManager;
+use Hyperf\McpServer\ServerRegistry;
 use Psr\Container\ContainerInterface;
 
 class RegisterMcpServerListener implements ListenerInterface
@@ -32,7 +32,7 @@ class RegisterMcpServerListener implements ListenerInterface
 
     public function process(object $event): void
     {
-        $manager = $this->container->get(ServerManager::class);
+        $manager = $this->container->get(ServerRegistry::class);
         $manager->register();
     }
 }

@@ -126,16 +126,17 @@ return [
             ],
 
             // HTTP transport configuration
-            'router' => [
+            'http' => [
                 'path' => '/mcp',
                 'options' => [
                     'middleware' => [], // Add middleware if needed
                 ],
+                // 'server' => 'http',
             ],
 
             // STDIO transport configuration
-            'command' => [
-                'signature' => 'mcp:server',
+            'stdio' => [
+                'name' => 'mcp:server',
                 'description' => 'Run the MCP server via STDIO transport.',
             ],
         ],
