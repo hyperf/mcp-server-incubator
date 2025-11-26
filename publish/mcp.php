@@ -125,17 +125,18 @@ return [
                 // Add custom loader service IDs here
             ],
 
-            // HTTP transport configuration
-            'router' => [
+            // HTTP mode configuration
+            'http' => [
                 'path' => '/mcp',
                 'options' => [
                     'middleware' => [], // Add middleware if needed
                 ],
+                // 'server' => 'http', // Specify server if needed
             ],
 
-            // STDIO transport configuration
-            'command' => [
-                'signature' => 'mcp:server',
+            // STDIO mode configuration
+            'stdio' => [
+                'name' => 'mcp:server',
                 'description' => 'Run the MCP server via STDIO transport.',
             ],
         ],

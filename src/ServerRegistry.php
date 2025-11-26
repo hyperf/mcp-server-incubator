@@ -15,6 +15,7 @@ namespace Hyperf\McpServer;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Router;
 use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Schema\ServerCapabilities;
@@ -29,12 +30,15 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
 
-class ServerManager
+class ServerRegistry
 {
     protected array $servers = [];
 
-    public function __construct(protected ContainerInterface $container, protected ConfigInterface $config)
-    {
+    public function __construct(
+        protected DispatcherFactory $dispatcherFactory, // !!! Don't remove this line
+        protected ContainerInterface $container,
+        protected ConfigInterface $config
+    ) {
     }
 
     public function register()
@@ -46,8 +50,8 @@ class ServerManager
                 continue;
             }
             $server = $this->buildServer($options);
-            ! empty($options['router'] ?? '') && $this->registerRouter($server, $options['router'] ?? []);
-            ! empty($options['command'] ?? '') && $this->registerCommand($server, $options['command'] ?? []);
+            ! empty($options['http'] ?? '') && $this->registerHttpRouter($server, $options['http'] ?? []);
+            ! empty($options['stdio'] ?? '') && $this->registerCommand($server, $options['stdio'] ?? []);
         }
     }
 
@@ -268,9 +272,9 @@ class ServerManager
         }
     }
 
-    protected function registerRouter(Server $server, array $options): void
+    protected function registerHttpRouter(Server $server, array $options): void
     {
-        Router::addRoute(
+        $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
             function (RequestInterface $request) use ($server) {
@@ -278,6 +282,11 @@ class ServerManager
             },
             $options['options'] ?? []
         );
+        if (! empty($options['server'] ?? '')) {
+            Router::addServer($options['server'], $callable);
+        } else {
+            $callable();
+        }
     }
 
     protected function registerCommand(Server $server, array $options): void
@@ -290,12 +299,13 @@ class ServerManager
                 protected Server $server,
                 protected array $options
             ) {
-                $this->signature = $this->options['signature'] ?? 'mcp:stdio';
                 $this->description = $this->options['description'] ?? 'Run the MCP stdio server.';
                 if ($this->container->has(StdoutLoggerInterface::class)) {
                     $this->logger = $this->container->get(StdoutLoggerInterface::class);
                 }
-                parent::__construct();
+                parent::__construct(
+                    $this->options['name'] ?? 'mcp:stdio'
+                );
             }
 
             public function handle(): int
