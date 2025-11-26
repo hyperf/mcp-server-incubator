@@ -31,9 +31,13 @@ composer require hyperf/mcp-server-incubator
 
 ## ⚙️ 配置
 
-### 基础配置
+### 发布配置文件
 
-在 `config/autoload/mcp.php` 中添加配置：
+```bash
+php bin/hyperf.php vendor:publish hyperf/mcp-server-incubator
+```
+
+配置示例：
 
 ```php
 <?php
@@ -100,12 +104,6 @@ return [
         ]
     ]
 ];
-```
-
-### 发布配置文件
-
-```bash
-php bin/hyperf.php vendor:publish hyperf/mcp-server-incubator
 ```
 
 ## 🔧 使用
