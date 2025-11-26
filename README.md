@@ -33,71 +33,69 @@ composer require hyperf/mcp-server-incubator
 
 ### 基础配置
 
-在 `config/autoload/server.php` 中添加 MCP 服务器配置：
+在 `config/autoload/mcp.php` 中添加配置：
 
 ```php
 <?php
 return [
-    'mcp' => [
-        'servers' => [
-            'default' => [
-                'enabled' => true,
-                'name' => 'My MCP Server',
-                'version' => '1.0.0',
-                'description' => 'A powerful MCP server implementation',
-                'website_url' => 'https://example.com',
-                'icons' => [
-                    [
-                        'url' => 'https://example.com/icon.png',
-                        'media_type' => 'image/png',
-                        'width' => 64,
-                        'height' => 64
-                    ]
-                ],
-
-                // 服务器能力配置
-                'capabilities' => [
-                    'tools' => true,
-                    'resources' => true,
-                    'prompts' => true,
-                    'completions' => true,
-                ],
-
-                // 协议版本
-                'protocol_version' => '2024-11-05',
-
-                // 分页限制
-                'pagination_limit' => 100,
-
-                // 会话配置
-                'session' => [
-                    'ttl' => 3600,
-                    'store' => \Mcp\Server\Session\SessionInterface::class,
-                    'factory' => \Mcp\Server\Session\SessionFactory::class,
-                ],
-
-                // 类发现配置
-                'discovery' => [
-                    'base_path' => BASE_PATH,
-                    'scan_dirs' => ['app', 'src'],
-                    'exclude_dirs' => ['vendor', 'tests'],
-                    // 'cache' => \Psr\SimpleCache\CacheInterface::class,
-                ],
-
-                // 路由配置（HTTP 传输）
-                'http' => [
-                    'path' => '/mcp',
-                    'options' => [
-                        'middleware' => ['auth']
-                    ],
-                    // 'server' => 'http', // 指定服务器名称（可选）
-                ],
-
-                // 命令行配置（STDIO 传输）
-                'stdio' => [
-                    'name' => 'mcp:server',
-                    'description' => 'Start MCP server via STDIO'
+    'servers' => [
+        [
+            'enabled' => true,
+            'name' => 'My MCP Server',
+            'version' => '1.0.0',
+            'description' => 'A powerful MCP server implementation',
+            'website_url' => 'https://example.com',
+            'icons' => [
+                [
+                    'url' => 'https://example.com/icon.png',
+                    'media_type' => 'image/png',
+                    'width' => 64,
+                    'height' => 64
                 ]
+            ],
+
+            // 服务器能力配置
+            'capabilities' => [
+                'tools' => true,
+                'resources' => true,
+                'prompts' => true,
+                'completions' => true,
+            ],
+
+            // 协议版本
+            'protocol_version' => '2024-11-05',
+
+            // 分页限制
+            'pagination_limit' => 100,
+
+            // 会话配置
+            'session' => [
+                'ttl' => 3600,
+                'store' => \Mcp\Server\Session\SessionInterface::class,
+                'factory' => \Mcp\Server\Session\SessionFactory::class,
+            ],
+
+            // 类发现配置
+            'discovery' => [
+                'base_path' => BASE_PATH,
+                'scan_dirs' => ['app', 'src'],
+                'exclude_dirs' => ['vendor', 'tests'],
+                // 'cache' => \Psr\SimpleCache\CacheInterface::class,
+            ],
+
+            // 路由配置（HTTP 传输）
+            'http' => [
+                'path' => '/mcp',
+                'options' => [
+                    'middleware' => ['auth']
+                ],
+                // 'server' => 'http', // 指定服务器名称（可选）
+            ],
+
+            // 命令行配置（STDIO 传输）
+            'stdio' => [
+                'name' => 'mcp:server',
+                'description' => 'Start MCP server via STDIO'
             ]
         ]
     ]
