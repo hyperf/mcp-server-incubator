@@ -18,11 +18,19 @@ use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {
-    public function __invoke(ContainerInterface $container): array
+    public function __invoke(): array
     {
         return [
             'dependencies' => [
                 SessionInterface::class => fn ($container) => new InMemorySessionStore(3600),
+            ],
+            'publish' => [
+                [
+                    'id' => 'mcp',
+                    'description' => 'The configuration file of MCP server.',
+                    'source' => __DIR__ . '/../publish/mcp.php',
+                    'destination' => BASE_PATH . '/config/autoload/mcp.php',
+                ],
             ],
         ];
     }
