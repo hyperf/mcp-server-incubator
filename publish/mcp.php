@@ -131,7 +131,7 @@ return [
                 'options' => [
                     'middleware' => [], // Add middleware if needed
                 ],
-                // 'server' => 'http',
+                // 'server' => 'http', // Specify server if needed
             ],
 
             // STDIO transport configuration
