@@ -14,7 +14,6 @@ namespace Hyperf\McpServer;
 
 use Mcp\Server\Session\InMemorySessionStore;
 use Mcp\Server\Session\SessionInterface;
-use Psr\Container\ContainerInterface;
 
 class ConfigProvider
 {

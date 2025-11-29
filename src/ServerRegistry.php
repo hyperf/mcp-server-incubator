@@ -15,6 +15,7 @@ namespace Hyperf\McpServer;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\Di\Container;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Router;
 use Mcp\Schema\Enum\ProtocolVersion;
@@ -24,21 +25,23 @@ use Mcp\Server\Builder;
 use Mcp\Server\Handler\Notification\NotificationHandlerInterface;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
 use Mcp\Server\Transport\StdioTransport;
-use Mcp\Server\Transport\StreamableHttpTransport;
+use Mcp\Server\Transport\TransportInterface;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
+use WeakMap;
 
 class ServerRegistry
 {
-    protected array $servers = [];
+    /** @var WeakMap<Server,TransportInterface> */
+    protected WeakMap $transports;
 
     public function __construct(
         protected DispatcherFactory $dispatcherFactory, // !!! Don't remove this line
         protected ContainerInterface $container,
         protected ConfigInterface $config
     ) {
+        $this->transports = new WeakMap();
     }
 
     public function register()
@@ -277,8 +280,12 @@ class ServerRegistry
         $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
-            function (RequestInterface $request) use ($server) {
-                return $server->run(new StreamableHttpTransport($request));
+            function () use ($server) {
+                if (! isset($this->transports[$server])) {
+                    $server->run($transport = new Transport\CoStreamableHttpTransport());
+                    $this->transports[$server] = $transport;
+                }
+                return $this->transports[$server]->listen();
             },
             $options['options'] ?? []
         );
@@ -319,8 +326,10 @@ class ServerRegistry
         $commandId = 'mcp.command.' . spl_object_id($command);
 
         // Try different container methods for binding
-        if (method_exists($this->container, 'set')) {
-            $this->container->set($commandId, $command);
+        /** @var Container $container */
+        $container = $this->container;
+        if (method_exists($container, 'set')) {
+            $container->set($commandId, $command);
         }
 
         $commands = $this->config->get('commands', []);
