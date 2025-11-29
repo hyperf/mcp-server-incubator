@@ -9,6 +9,17 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use Hyperf\Contract\StdoutLoggerInterface;
+
+/**
+ * This file is part of Hyperf.
+ *
+ * @see     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
+
 return [
     'servers' => [
         [
@@ -40,7 +51,7 @@ return [
             'pagination_limit' => 50,
 
             // Logger service ID (optional, will use PSR-3 logger if available)
-            'logger' => null, // e.g., 'hyperf.logger'
+            'logger' => StdoutLoggerInterface::class, // e.g., 'hyperf.logger'
 
             // Session configuration
             'session' => [
@@ -66,7 +77,7 @@ return [
             'discovery' => [
                 'base_path' => BASE_PATH,
                 'scan_dirs' => ['.', 'src', 'app'],
-                'exclude_dirs' => ['vendor', 'tests', 'config'],
+                'exclude_dirs' => ['vendor', 'tests', 'config', 'runtime'],
                 'cache' => null, // CacheInterface service ID for discovery cache
             ],
 
